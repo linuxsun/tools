@@ -1,0 +1,4 @@
+handlers:
+    - name: restart supervisord.service
+      service: name=supervisord.service state=restarted
+

@@ -1,0 +1,14 @@
+- hosts: supervisor
+  sudo: yes
+  # gather_facts: no
+  gather_facts: yes # 主要用于获取远程系统的数据,从而可以在playbook中作为变量使用.
+                    # 比如，获取远程主机的主机名及系统版本: ansible_nodename,ansible_distribution == "CentOS"
+                    # 关闭，性能也有一定的提升
+  
+  # vars
+  vars:
+    NUM: 1
+
+  # roles list    
+  roles:
+    - supervisor

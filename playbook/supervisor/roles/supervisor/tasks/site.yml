@@ -1,0 +1,87 @@
+- name: install python-setuptools-devel
+  yum: 
+    name: python-setuptools-devel 
+    state: present
+    #state: latest
+
+- file:
+    path: /etc/supervisord.d
+    state: directory
+    #mode: 0764
+    owner: sysadmin
+    group: sysadmin
+
+#- user:
+#    name: www
+#    shell: /bin/bash
+
+# create dir
+- file:
+    path: /logs/supervisor
+    state: directory
+    owner: sysadmin
+    group: sysadmin
+
+# create /data/tmp
+- file:
+    path: /data/tmp
+    state: directory
+    owner: sysadmin
+    group: sysadmin
+
+- name: easy_install supervisor
+  shell: which supervisord &>/dev/null || easy_install supervisor
+
+- name: echo_supervisord_conf > /etc/supervisord.conf
+  shell: ls /etc/supervisord.conf.default &>/dev/null || echo_supervisord_conf > /etc/supervisord.conf.default
+
+- name: copy /etc/supervisord.conf
+  template: src=supervisord.conf.j2 dest=/etc/supervisord.conf
+  ignore_errors: True
+
+- name: start supervisord -c /etc/supervisord.conf
+  shell: pgrep supervisord &>/dev/null || supervisord -c /etc/supervisord.conf
+
+- copy:
+    src: files/supervisord.service
+    dest: /etc/systemd/system/supervisord.service
+    owner: sysadmin
+    group: sysadmin
+    #mode: 0644
+    #register: SYSTEMD_TRUE
+  ignore_errors: True
+
+- name: systemd to reread configs
+  systemd: 
+    daemon_reload: yes
+    name: supervisord.service
+  ignore_errors: True
+
+- name: restart service supervisord.service on centos
+  systemd:
+    state: restarted
+    name: supervisord.service
+  ignore_errors: True
+
+- name: enable service supervisord.service and ensure it is not masked
+  systemd:
+    name: supervisord.service
+    enabled: yes
+    masked: no
+  ignore_errors: True
+
+- name: Make sure a service is running
+  systemd: state=started name=supervisord.service
+  ignore_errors: True
+
+- name: add supervisord to /etc/rc.local
+  shell: grep "supervisord -c /etc/supervisord.conf" /etc/rc.local &>/dev/null || echo "supervisord -c /etc/supervisord.conf &" >> /etc/rc.local
+  when: ansible_distribution_major_version == "6"
+
+- name: start supervisord
+  shell: pgrep supervisord >/dev/null || /usr/bin/supervisord -c /etc/supervisord.conf &
+  when: ansible_distribution_major_version == "6"
+
+# https://github.com/zokeber/supervisor-systemd
+# https://github.com/miguno/wirbelsturm-rpm-supervisord
+# http://supervisord.org
