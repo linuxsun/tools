@@ -1,0 +1,44 @@
+. {
+    etcd skydns.local {
+        path /skydns
+        upstream /etc/resolv.conf
+    }
+    cache 160 skydns.local
+    proxy . /etc/resolv.conf
+}
+
+dev.com {
+    etcd {
+        stubzones
+        path /skydns
+        endpoint http://ETCD_ADDR:2379
+        upstream /etc/resolv.conf
+    }
+    log stdout
+    errors stdout
+    proxy . /etc/resolv.conf
+}
+
+test.com {
+    etcd {
+        stubzones
+        path /skydns
+        endpoint http://ETCD_ADDR:2379
+        upstream /etc/resolv.conf
+    }
+    log stdout
+    errors stdout
+    proxy . /etc/resolv.conf
+}
+
+dev.io {
+    etcd {
+        stubzones
+        path /skydns
+        endpoint http://ETCD_ADDR:2379
+        upstream /etc/resolv.conf
+    }
+    log stdout
+    errors stdout
+    proxy . /etc/resolv.conf
+}
