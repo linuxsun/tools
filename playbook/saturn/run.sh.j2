@@ -1,0 +1,48 @@
+#!/bin/env bash
+RETVAL=0
+prog={{ PROJEST_NAME }}
+VIP_SATURN_ZK_CONNECTION={{ VIP_SATURN_ZK_CONNECTION }}
+workdir="{{ WORK_DIR }}/{{ PROJEST_NAME }}"
+{% if NAMESPACE != 0 %}
+NAMESPACE={{ NAMESPACE }}
+{% else %}
+NAMESPACE="sa.dev.io"
+{% endif %}
+{% if EXECUTOR != 0 %}
+EXECUTOR={{ EXECUTOR }}
+{% else %}
+EXECUTOR="executor_{{ RANDOM_PORT }}"
+{% endif %}
+
+start() {
+    echo -n $"Starting $prog: "
+    $workdir/bin/saturn-executor.sh start -n $NAMESPACE -e $EXECUTOR
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    $workdir/bin/saturn-executor.sh stop
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+case $1 in
+  start)   
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)  
+    echo "require start|stop|status|restart" 
+    RETVAL=1
+esac
+exit $RETVAL

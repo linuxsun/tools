@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>&#xd;
+</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>10</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>PROJEST_NAME_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORK_DIR_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>VIP_SATURN_ZK_CONNECTION_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>10.25.33.22:2181</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>JMX_PORT_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ENVIRONMENT_MEM_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>NAMESPACE_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXECUTOR_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>ANSIBLE_HOST_LIST_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXECUTOR_VERSION_FROM_JENKINS</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>java-pre-slave</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38.1">
+      <project>pre-saturn-executor-build</project>
+      <filter>saturn/*.*</filter>
+      <target>${WORKSPACE}</target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command>echo ${WORK_DIR_FROM_JENKINS}
+echo ${PROJEST_NAME_FROM_JENKINS}
+echo ${VIP_SATURN_ZK_CONNECTION_FROM_JENKINS}
+echo ${JMX_PORT_FROM_JENKINS}
+echo ${ENVIRONMENT_MEM_FROM_JENKINS}
+echo ${NAMESPACE_FROM_JENKINS}
+echo ${EXECUTOR_FROM_JENKINS}
+echo $ANSIBLE_HOST_LIST_FROM_JENKINS
+echo ${EXECUTOR_VERSION_FROM_JENKINS}</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>
+if [ $PROJEST_NAME_FROM_JENKINS -eq 0 ]; then
+  unset PROJEST_NAME_FROM_JENKINS
+  NUM=`sh ${WORKSPACE}/random.sh nun 4`
+  PROJEST_NAME_FROM_JENKINS=${PROJEST_NAME_FROM_JENKINS:-&quot;saturn-executor-$NUM&quot;}
+fi
+
+tee saturn-executor.yaml &lt;&lt;- EOF
+---
+- hosts: $ANSIBLE_HOST_LIST_FROM_JENKINS
+  remote_user: sysadmin
+
+  vars:
+    EXECUTOR_VERSION: $EXECUTOR_VERSION_FROM_JENKINS
+    WORK_DIR: $WORK_DIR_FROM_JENKINS
+    PROJEST_NAME: $PROJEST_NAME_FROM_JENKINS
+    VIP_SATURN_ZK_CONNECTION: &quot;$VIP_SATURN_ZK_CONNECTION_FROM_JENKINS&quot;
+    JMX_PORT: $JMX_PORT_FROM_JENKINS
+    ENVIRONMENT_MEM: $ENVIRONMENT_MEM_FROM_JENKINS
+    NAMESPACE: $NAMESPACE_FROM_JENKINS
+    EXECUTOR: $EXECUTOR_FROM_JENKINS
+
+  tasks:
+
+  - set_fact:
+      RANDOM_PORT: &quot;{{ 100 | random }}&quot;
+    run_once: yes
+    when: (JMX_PORT == 0)
+
+  - set_fact:
+      RANDOM_PORT: &quot;{{ JMX_PORT | int }}&quot;
+    run_once: yes
+    when: (JMX_PORT != 0)
+
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}&quot;
+      state: absent
+ 
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}&quot;
+      state: directory
+      owner: sysadmin
+      group: sysadmin
+      #mode: 0755
+
+  - name: unzip
+    unarchive:
+      src: &quot;saturn-executor-{{ EXECUTOR_VERSION }}-zip.zip&quot;
+      dest: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/&quot; 
+
+  - name: rename
+    shell: &quot;mv {{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}/* {{ WORK_DIR }}/{{ PROJEST_NAME }}/&quot;
+
+  - template:
+      src: saturn-executor.sh.j2
+      dest: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/bin/saturn-executor.sh&quot;
+      owner: sysadmin
+      group: sysadmin
+      mode: 0755
+
+  - template:
+      src: run.sh.j2
+      dest: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/bin/run.sh&quot;
+      owner: sysadmin
+      group: sysadmin
+      mode: 0755
+
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}-zip.zip&quot;
+      state: absent
+
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}&quot;
+      state: absent
+
+EOF
+
+</command>
+    </hudson.tasks.Shell>
+    <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@0.6.2">
+      <playbook>saturn-executor.yaml</playbook>
+      <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
+      <limit>$ANSIBLE_HOST_LIST_FROM_JENKINS</limit>
+      <tags></tags>
+      <skippedTags></skippedTags>
+      <startAtTask></startAtTask>
+      <credentialsId></credentialsId>
+      <sudo>false</sudo>
+      <sudoUser></sudoUser>
+      <forks>5</forks>
+      <unbufferedOutput>true</unbufferedOutput>
+      <colorizedOutput>false</colorizedOutput>
+      <hostKeyChecking>false</hostKeyChecking>
+      <additionalParameters></additionalParameters>
+      <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
+    </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

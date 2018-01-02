@@ -1,0 +1,76 @@
+#!/bin/env bash
+#if [ $PROJEST_NAME_FROM_JENKINS -eq 0 ]; then
+#  unset PROJEST_NAME_FROM_JENKINS
+#  NUM=`sh ${WORKSPACE}/random.sh nun 4`
+#  PROJEST_NAME_FROM_JENKINS=${PROJEST_NAME_FROM_JENKINS:-"saturn-executor-$NUM"}
+#fi
+
+#tee saturn-executor.yaml <<- EOF
+---
+- hosts: $ANSIBLE_HOST_LIST_FROM_JENKINS
+  remote_user: sysadmin
+
+  vars:
+    EXECUTOR_VERSION: $EXECUTOR_VERSION_FROM_JENKINS
+    WORK_DIR: $WORK_DIR_FROM_JENKINS
+    PROJEST_NAME: $PROJEST_NAME_FROM_JENKINS
+    VIP_SATURN_ZK_CONNECTION: "$VIP_SATURN_ZK_CONNECTION_FROM_JENKINS"
+    JMX_PORT: $JMX_PORT_FROM_JENKINS
+    ENVIRONMENT_MEM: $ENVIRONMENT_MEM_FROM_JENKINS
+    NAMESPACE: $NAMESPACE_FROM_JENKINS
+    EXECUTOR: $EXECUTOR_FROM_JENKINS
+
+  tasks:
+
+  - set_fact:
+      RANDOM_PORT: "{{ 100 | random }}"
+    run_once: yes
+    when: (JMX_PORT == 0)
+
+  - set_fact:
+      RANDOM_PORT: "{{ JMX_PORT | int }}"
+    run_once: yes
+    when: (JMX_PORT != 0)
+
+  - file:
+      path: "{{ WORK_DIR }}/{{ PROJEST_NAME }}"
+      state: absent
+ 
+  - file:
+      path: "{{ WORK_DIR }}/{{ PROJEST_NAME }}"
+      state: directory
+      owner: sysadmin
+      group: sysadmin
+      #mode: 0755
+
+  - name: unzip
+    unarchive:
+      src: "saturn-executor-{{ EXECUTOR_VERSION }}-zip.zip"
+      dest: "{{ WORK_DIR }}/{{ PROJEST_NAME }}/" 
+
+  - name: rename
+    shell: "mv {{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}/* {{ WORK_DIR }}/{{ PROJEST_NAME }}/"
+
+  - template:
+      src: saturn-executor.sh.j2
+      dest: "{{ WORK_DIR }}/{{ PROJEST_NAME }}/bin/saturn-executor.sh"
+      owner: sysadmin
+      group: sysadmin
+      mode: 0755
+
+  - template:
+      src: run.sh.j2
+      dest: "{{ WORK_DIR }}/{{ PROJEST_NAME }}/bin/run.sh"
+      owner: sysadmin
+      group: sysadmin
+      mode: 0755
+
+  - file:
+      path: "{{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}-zip.zip"
+      state: absent
+
+  - file:
+      path: "{{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-executor-{{ EXECUTOR_VERSION }}"
+      state: absent
+
+#EOF
