@@ -46,7 +46,7 @@
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
               <string>#</string>
-              <string>st-hoteldownload</string>
+              <string>hd-download</string>
             </a>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
