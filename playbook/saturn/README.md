@@ -31,7 +31,7 @@ Jenkins是主、从模式，构建分两步：
 
 ## 二、 自动部署Saturn-Console
 
-playbook 使用方法有两种方式,与Saturn-executor原理类似。
+playbook 使用方法有两种方式,原理与Saturn-executor类似。
 
 ### 1. 直接用ansible部署
 参考1.1
