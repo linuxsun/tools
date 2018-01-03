@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>3</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>3</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>CONSOLE_VERSION_JK</name>
+          <description></description>
+          <defaultValue>2.1.0.1</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PROJEST_NAME_JK</name>
+          <description>saturn-console-X-Y-Z</description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORK_DIR_JK</name>
+          <description>/application/saturn/saturn-console-X-Y-Z</description>
+          <defaultValue>/application/saturn</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ZKADDRESSLIST_JK</name>
+          <description>
+</description>
+          <defaultValue>10.25.33.22:2181</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>NAME_AND_NAMESPACE_LIST</name>
+          <description></description>
+          <defaultValue>&apos;[{&quot;nameAndNamespace&quot;:&quot;/pre/tg-hotel.dev.io&quot;, &quot;zkAddressList&quot;:&quot;$ZKADDRESSLIST_JK&quot;},{&quot;nameAndNamespace&quot;:&quot;/pre/tg-pay.dev.io&quot;, &quot;zkAddressList&quot;:&quot;$ZKADDRESSLIST_JK&quot;},{&quot;nameAndNamespace&quot;:&quot;/pre/tg-prod.dev.io&quot;, &quot;zkAddressList&quot;:&quot;$ZKADDRESSLIST_JK&quot;}]&apos;</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>ANSIBLE_HOST_LIST_JK</name>
+          <description>[ # 必选 ]</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>#</string>
+              <string>st-hoteldownload</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@3.3.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>http://username@192.168.31.26/tools/playbook.git</url>
+        <credentialsId>876bde65-fbba-46bb-98a6-ccd03f725c05</credentialsId>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <gitTool>jgitapache</gitTool>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd saturn;
+test -f saturn-console-2.1.0.1.jar || wget http://192.168.30.247/s/saturn-console-2.1.0.1.jar</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.35.2">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+          </configs>
+          <projects>pre-saturn-console-deploy</projects>
+          <condition>FAILED_OR_BETTER</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>saturn/*.*</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>false</onlyIfSuccessful>
+      <fingerprint>false</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>

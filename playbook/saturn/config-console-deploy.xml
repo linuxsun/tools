@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>&#xd;
+</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>10</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>CONSOLE_VERSION_JK</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>WORK_DIR_JK</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>PROJEST_NAME_JK</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ZKADDRESSLIST_JK</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>NAME_AND_NAMESPACE_LIST</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.TextParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ANSIBLE_HOST_LIST_JK</name>
+          <description></description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>java-pre-slave</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.38.1">
+      <project>pre-saturn-console-build</project>
+      <filter>saturn/*.*</filter>
+      <target>${WORKSPACE}</target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
+      <flatten>true</flatten>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command>echo ${CONSOLE_VERSION_JK}
+echo ${WORK_DIR_JK}
+echo ${PROJEST_NAME_JK}
+echo ${ZKADDRESSLIST_JK}
+echo ${NAME_AND_NAMESPACE_LIST}
+echo ${ANSIBLE_HOST_LIST_JK}
+</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>
+if [ $PROJEST_NAME_JK -eq 0 ]; then
+  unset PROJEST_NAME_JK
+  NUM=`sh ${WORKSPACE}/random.sh nun 4`
+  PROJEST_NAME_JK=${PROJEST_NAME_JK:-&quot;saturn-console-$NUM&quot;}
+fi
+
+tee saturn-console.yaml &lt;&lt;- EOF
+---
+- hosts: ${ANSIBLE_HOST_LIST_JK}
+  remote_user: sysadmin
+
+  vars:
+    CONSOLE_VERSION: ${CONSOLE_VERSION_JK}
+    WORK_DIR: ${WORK_DIR_JK}
+    PROJEST_NAME: ${PROJEST_NAME_JK}
+    ZKADDRESSLIST: ${ZKADDRESSLIST_JK}
+    NAMEANDNAMESPACE: ${NAME_AND_NAMESPACE_LIST}
+
+
+  tasks:
+
+  - set_fact:
+      RANDOM_NAME: &quot;{{ 100 | random }}&quot;
+    run_once: yes
+    when: (PROJEST_NAME == 0)
+
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}&quot;
+      state: absent
+ 
+  - file:
+      path: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}&quot;
+      state: directory
+      owner: sysadmin
+      group: sysadmin
+      #mode: 0755
+
+  - copy:
+      src: &quot;saturn-console-{{ CONSOLE_VERSION }}.jar&quot;
+      dest: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-console-{{ CONSOLE_VERSION }}.jar&quot;
+      owner: sysadmin
+      group: sysadmin
+
+  - template:
+      src: regcenter.json.j2
+      dest: &quot;{{ WORK_DIR }}/{{ PROJEST_NAME }}/regcenter.json&quot;
+      owner: sysadmin
+      group: sysadmin
+      mode: 0644
+      
+  - name: start saturn-console-{{ CONSOLE_VERSION }}
+    shell: &apos;nohup $(which java) -DSATURN_CONSOLE_LOG={{ WORK_DIR }}/{{ PROJEST_NAME }} \
+           -DREG_CENTER_JSON_PATH={{ WORK_DIR }}/{{ PROJEST_NAME }}/regcenter.json \
+           -jar {{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-console-{{ CONSOLE_VERSION }}.jar &gt;/dev/null 2&gt;&amp;1 &amp;&apos;
+      
+EOF
+
+</command>
+    </hudson.tasks.Shell>
+    <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@0.6.2">
+      <playbook>saturn-console.yaml</playbook>
+      <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
+      <limit>$ANSIBLE_HOST_LIST_JK</limit>
+      <tags></tags>
+      <skippedTags></skippedTags>
+      <startAtTask></startAtTask>
+      <credentialsId></credentialsId>
+      <sudo>false</sudo>
+      <sudoUser></sudoUser>
+      <forks>5</forks>
+      <unbufferedOutput>true</unbufferedOutput>
+      <colorizedOutput>false</colorizedOutput>
+      <hostKeyChecking>false</hostKeyChecking>
+      <additionalParameters></additionalParameters>
+      <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
+      <extraVars>
+        <org.jenkinsci.plugins.ansible.ExtraVar>
+          <key>nameAndNamespace</key>
+          <value>/pre/sa.dev.io</value>
+          <hidden>false</hidden>
+        </org.jenkinsci.plugins.ansible.ExtraVar>
+        <org.jenkinsci.plugins.ansible.ExtraVar>
+          <key>zkAddressList</key>
+          <value>10.25.33.22:2181</value>
+          <hidden>false</hidden>
+        </org.jenkinsci.plugins.ansible.ExtraVar>
+        <org.jenkinsci.plugins.ansible.ExtraVar>
+          <key>nameAndNamespace</key>
+          <value>/pre/platform</value>
+          <hidden>false</hidden>
+        </org.jenkinsci.plugins.ansible.ExtraVar>
+        <org.jenkinsci.plugins.ansible.ExtraVar>
+          <key>zkAddressList</key>
+          <value>10.25.33.22:2181</value>
+          <hidden>false</hidden>
+        </org.jenkinsci.plugins.ansible.ExtraVar>
+      </extraVars>
+    </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
