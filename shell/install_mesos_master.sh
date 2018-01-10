@@ -74,6 +74,81 @@ tee /etc/default/mesos-slave <<- EOF
 MASTER=`cat /etc/mesos/zk`
 EOF
 
+tee /etc/mesos-acls <<- EOF
+{
+    "run_tasks": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "users": {
+                "type": "ANY"
+            }
+        }
+    ],
+    "register_frameworks": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "roles": {
+                "type": "ANY"
+            }
+        }
+    ],
+    "reserve_resources": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "roles": {
+                "type": "ANY"
+            },
+            "resources": {
+                "type": "ANY"
+            }
+        }
+    ],
+    "unreserve_resources": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "roles": {
+                "type": "ANY"
+            },
+            "reserver_principals": {
+                "type": "ANY"
+            }
+        }
+    ],
+    "create_volumes": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "roles": {
+                "type": "ANY"
+            }
+        }
+    ],
+    "destroy_volumes": [
+        {
+            "principals": {
+                "type": "ANY"
+            },
+            "roles": {
+                "type": "ANY"
+            },
+            "creator_principals": {
+                "type": "ANY"
+            }
+        }
+    ]
+}
+EOF
+echo 'file:///etc/mesos-acls' > /etc/mesos-master/acls
+
 tee $IPFWS <<- EOF
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT
