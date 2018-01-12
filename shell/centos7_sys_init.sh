@@ -11,11 +11,11 @@ LOCK_FILE="/var/run/sys_init.lock"
 #update system pack
 yum_update(){
     yum -y install wget
-    cd /etc/yum.repos.d/
-    mkdir bak
-    mv ./*.repo bak
-    wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-    wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+    #cd /etc/yum.repos.d/
+    #mkdir bak
+    #mv ./*.repo bak
+    #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+    #wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
     yum clean all && yum makecache
     yum -y install net-tools lrzsz gcc gcc-c++ make cmake libxml2-devel openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel autoconf automake zlib-devel  python-devel
 }
@@ -47,7 +47,8 @@ sshd_config(){
 SSHD_CONFIG="/etc/ssh/sshd_config"
 sed -i 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' $SSHD_CONFIG
 sed -i 's/#UseDNS yes/UseDNS no/' $SSHD_CONFIG
-sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
+#sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
+sed -i 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g' $SSHD_CONFIG
 sed -i 's|#Port\ 22|Port\ 52113|g' $SSHD_CONFIG
 sed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG
 sed -i 's|ChallengeResponseAuthentication\ yes|ChallengeResponseAuthentication\ no|g' $SSHD_CONFIG
@@ -357,7 +358,7 @@ yum_update
 zone_time
 ulimit_config
 sysctl_config
-#sshd_config
+sshd_config
 #selinux_config
 #iptables_config
 }
