@@ -100,8 +100,6 @@ fs.suid_dumpable = 0
 # Hide exposed kernel pointers
 kernel.kptr_restrict = 1
 
-
-
 ###
 ### IMPROVE SYSTEM MEMORY MANAGEMENT ###
 ###
@@ -125,11 +123,8 @@ vm.overcommit_memory = 0
 kernel.shmmax = 268435456
 kernel.shmall = 268435456
 
-# Keep at least 64MB of free RAM space available
-vm.min_free_kbytes = 65535
-
-vm.max_map_count=262144
-
+# Keep at least 256MB of free RAM space available
+vm.min_free_kbytes = 262144
 
 ###
 ### GENERAL NETWORK SECURITY OPTIONS ###
@@ -213,7 +208,6 @@ net.ipv4.tcp_rfc1337 = 1
 #net.ipv6.conf.default.accept_ra=0
 #net.ipv6.conf.eth0.autoconf=0
 #net.ipv6.conf.eth0.accept_ra=0
-
 
 ###
 ### TUNING NETWORK PERFORMANCE ###
@@ -309,6 +303,12 @@ net.ipv4.tcp_fastopen = 3
 net.ipv4.route.flush = 1
 net.ipv6.route.flush = 1
 
+###
+### other ###
+###
+vm.max_map_count=262144
+#vfs_cache_pressure=200
+
 EOF
 /sbin/sysctl -p
 echo "sysctl set OK!!"
@@ -364,11 +364,11 @@ sshd_config
 }
 
 if [ -f $LOCK_FILE ]; then
-  echo "请匆重复执行."
-  echo "强制执行请先解锁: rm $LOCK_FILE"
+  echo "locking..."
+  echo 'exec: rm $LOCK_FILE'
   exit 1
 else
-  echo -e "\033[31m centos7系统初始化脚本，请慎重运行！ press ctrl+C to cancel \033[0m"
+  echo -e "\033[31m press ctrl+C to cancel \033[0m"
   sleep 6
   main
   touch $LOCK_FILE
