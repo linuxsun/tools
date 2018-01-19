@@ -55,3 +55,5 @@
            -jar {{ WORK_DIR }}/{{ PROJEST_NAME }}/saturn-console-{{ CONSOLE_VERSION }}.jar >/dev/null 2>&1 &'
       
 #EOF
+
+# https://github.com/linuxsun/tools.git

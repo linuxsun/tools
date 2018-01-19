@@ -29,3 +29,5 @@ else
     num="$1"
     echo `randonpass`
 fi
+
+# https://github.com/linuxsun/tools.git

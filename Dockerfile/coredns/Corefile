@@ -11,7 +11,7 @@ dev.com {
     etcd {
         stubzones
         path /skydns
-        endpoint http://ETCD_ADDR:2379
+        endpoint ETCD_ADDR
         upstream /etc/resolv.conf
     }
     log stdout
@@ -23,7 +23,7 @@ test.com {
     etcd {
         stubzones
         path /skydns
-        endpoint http://ETCD_ADDR:2379
+        endpoint ETCD_ADDR
         upstream /etc/resolv.conf
     }
     log stdout
@@ -35,7 +35,7 @@ dev.io {
     etcd {
         stubzones
         path /skydns
-        endpoint http://ETCD_ADDR:2379
+        endpoint ETCD_ADDR
         upstream /etc/resolv.conf
     }
     log stdout

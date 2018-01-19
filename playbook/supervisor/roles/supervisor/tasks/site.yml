@@ -82,6 +82,9 @@
   shell: pgrep supervisord >/dev/null || /usr/bin/supervisord -c /etc/supervisord.conf &
   when: ansible_distribution_major_version == "6"
 
+# https://github.com/linuxsun/tools.git
+#
 # https://github.com/zokeber/supervisor-systemd
 # https://github.com/miguno/wirbelsturm-rpm-supervisord
 # http://supervisord.org
+#

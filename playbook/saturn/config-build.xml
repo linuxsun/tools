@@ -58,7 +58,7 @@
         <hudson.model.TextParameterDefinition>
           <name>ANSIBLE_HOST_LIST_FROM_JENKINS</name>
           <description>[ # 必填 ]
-st-hoteldownload</description>
+hd-download</description>
           <defaultValue>0</defaultValue>
         </hudson.model.TextParameterDefinition>
       </parameterDefinitions>
