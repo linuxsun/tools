@@ -7,7 +7,7 @@ if [[ "$(whoami)" != "root" ]]; then
 fi
 
 LOCK_FILE="/var/run/sys_init.lock"
-SSH_PORT=52113
+SSH_PORT=65522
 
 yum_update(){
     #yum -y install wget
