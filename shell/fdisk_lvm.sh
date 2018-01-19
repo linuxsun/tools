@@ -47,3 +47,4 @@ echo """#####################
 >>> echo "./fdisk_lvms.sh /dev/sdaXXX"
 """
 fi
+# https://github.com/linuxsun

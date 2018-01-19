@@ -32,3 +32,4 @@ grep "$DISK"1 $FSTAB || echo "$DISK"1 $DATA ext4 defaults 0 0 >> $FSTAB
 
 
 fi
+# https://github.com/linuxsun

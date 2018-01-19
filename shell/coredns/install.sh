@@ -109,6 +109,7 @@ chmod u+x $WORKDIR/coredns /etc/rc.d/init.d/coredns
 systemctl daemon-reload
 systemctl restart coredns
 
+# https://github.com/linuxsun/tools.git
 #
 # remove
 # rm /etc/rc.d/init.d/coredns /etc/coredns

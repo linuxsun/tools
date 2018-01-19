@@ -42,3 +42,4 @@ params="userId=$userId&namespace=$namespace&metrics=$metrics"
 echo "params: ${params}"
 curl -v ${url} --data ${params}
 
+# https://github.com/linuxsun

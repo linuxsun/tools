@@ -8,3 +8,5 @@ ssh-keygen -t rsa -b 4096
 echo "ssh-copy-id '-p 52113' -i ~/.ssh/id_rsa.pub <username>@<host>"
 
 chmod 644 ~/.ssh/authorized_keys
+
+# https://github.com/linuxsun

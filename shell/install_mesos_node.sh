@@ -87,3 +87,4 @@ ps -aux | grep mesos-slave
 # https://stackoverflow.com/questions/28457891/why-marathon-does-not-terminate-jobs-after-the-quorum-is-lost
 # https://issues.apache.org/jira/browse/MESOS-2934
 
+# https://github.com/linuxsun

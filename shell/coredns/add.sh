@@ -3,7 +3,7 @@
 #oldifs=$IFS
 #IFS=$oldifs
 
-URL="http://192.168.204.133:2379"
+URL="http://192.168.80.100:2379"
 URI="v2/keys/skydns"
 CURL="/usr/bin/curl"
 DEFAULT_TTL="3600"
@@ -96,7 +96,8 @@ case "$1" in
   ;;
 esac    
 
-
+# https://github.com/linuxsun/tools.git
+#
 # HELP
 # curl -XPUT http://192.168.80.100:2379/v2/keys/skydns/mesos/marathon/nginx -d value='{"host":"192.168.80.99","port":31029}'
 #

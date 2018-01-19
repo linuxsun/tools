@@ -20,3 +20,4 @@ fi
 if [ $num ]; then
   echo `randonpass`
 fi
+# https://github.com/linuxsun

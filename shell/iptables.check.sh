@@ -8,3 +8,4 @@ if [ "$ret" -eq 0 ]; then
 else
     xtables-multi iptables $@;
 fi &>/dev/null
+# https://github.com/linuxsun

@@ -13,3 +13,4 @@ if [ $ret -eq 0 ]; then
   echo $(ip addr show $ETH | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
 fi
 
+# https://github.com/linuxsun

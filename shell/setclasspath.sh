@@ -92,3 +92,4 @@ if [ "$os400" != "true" ]; then
     _RUNJDB="$JAVA_HOME"/bin/jdb
   fi
 fi
+# https://github.com/linuxsun

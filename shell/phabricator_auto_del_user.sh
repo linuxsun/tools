@@ -29,3 +29,4 @@ expect eof
 EOF
 fi
 done < $USER_NAME_LIST
+# https://github.com/linuxsun

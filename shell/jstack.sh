@@ -10,3 +10,4 @@ if [ $FREE -le $MIN ]; then
     echo $PID 
     $JSTACK $PID > pid.$PID.$(date "+%Y-%m-%d-%s").log
 fi
+# https://github.com/linuxsun

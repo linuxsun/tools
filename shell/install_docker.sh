@@ -82,3 +82,4 @@ fi
 # https://dcos.io/docs/1.10/installing/custom/system-requirements/install-docker-centos/
 # https://github.com/craimbert/mesos-tutorial
 # https://docs.docker.com/v1.13/engine/installation/linux/centos/
+# https://github.com/linuxsun

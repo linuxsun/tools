@@ -145,3 +145,4 @@ echo
 echo "    https://secure.phabricator.com/book/phabricator/article/configuration_guide/";
 
 # https://github.com/phacility
+# https://github.com/linuxsun

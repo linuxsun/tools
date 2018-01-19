@@ -63,3 +63,4 @@ if [ "$distMode" == 'true' ]
 then
   "$bin"/hbase-daemons.sh --config "${HBASE_CONF_DIR}" stop zookeeper
 fi
+# https://github.com/linuxsun

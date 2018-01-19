@@ -7,41 +7,67 @@ if [[ "$(whoami)" != "root" ]]; then
 fi
 
 LOCK_FILE="/var/run/sys_init.lock"
+SSH_PORT=52113
 
-#update system pack
 yum_update(){
-    yum -y install wget
-    #cd /etc/yum.repos.d/
-    #mkdir bak
-    #mv ./*.repo bak
+    #yum -y install wget
+    #cd /etc/yum.repos.d/ && mkdir bak && mv ./*.repo bak
     #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
     #wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
     yum clean all && yum makecache
-    yum -y install net-tools lrzsz gcc gcc-c++ make cmake libxml2-devel openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel autoconf automake zlib-devel  python-devel
+    yum -y install net-tools lrzsz telnet gcc gcc-c++ make cmake libxml2-devel openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel autoconf automake zlib-devel python-devel
 }
 
-#set ntp
 zone_time(){
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    TIME_SERVER="asia.pool.ntp.org"
+    CRON_ROOT="/var/spool/cron/root"
+    ECODE_I18N="/etc/sysconfig/i18n"
+    /bin/ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
     #printf 'ZONE="Asia/Shanghai"\nUTC=false\nARC=false' > /etc/sysconfig/clock
-    /usr/sbin/ntpdate asia.pool.ntp.org
-    echo "* */5 * * * /usr/sbin/ntpdate asia.pool.ntp.org > /dev/null 2>&1" >> /var/spool/cron/root;chmod 600 /var/spool/cron/root
-    echo 'LANG="en_US.UTF-8"' > /etc/sysconfig/i18n
-    source  /etc/sysconfig/i18n
+    /usr/sbin/ntpdate $TIME_SERVER
+    /bin/grep "$TIME_SERVER" $CRON_ROOT || /bin/echo "* */5 * * * /usr/sbin/ntpdate $TIME_SERVER > /dev/null 2>&1" >> $CRON_ROOT
+    /bin/chmod 600 $CRON_ROOT
+    /bin/echo 'LANG="en_US.UTF-8"' > $ECODE_I18N
+    source $ECODE_I18N
 } 
 
-#set ulimit
 ulimit_config(){
-echo "ulimit -SHn 51200" >> /etc/rc.local
-cat >> /etc/security/limits.conf << EOF
- *           soft   nofile       51200
- *           hard   nofile       51200
- *           soft   nproc        51200
- *           hard   nproc        51200
+unset ret
+LIMITS="/etc/security/limits.conf"
+MEMTOTAL=`/bin/grep MemTotal /proc/meminfo | awk '{print $2}'`
+NOFILE=0
+
+if [ -z $MEMTOTAL ]; then
+    exit 1
+fi
+
+if [ $MEMTOTAL -ge 16770000 ]
+then
+    NOFILE=65535
+elif [ $MEMTOTAL -ge 8380000 ]
+then
+    NOFILE=51200
+elif [ $MEMTOTAL -ge 4190000 ]
+then
+    NOFILE=25600
+elif [ -z $MEMTOTAL -o $MEMTOTAL -le 4189999 ]
+then
+    NOFILE=2048
+fi
+
+ulimit -SHn $MEMTOTAL
+/bin/grep "$MEMTOTAL" "$LIMITS" > /dev/null ;ret=$?
+if [ $ret -eq 1 ];then
+cat >> $LIMITS << EOF
+ *           soft   nofile       $NOFILE
+ *           hard   nofile       $NOFILE
+ *           soft   nproc        $NOFILE
+ *           hard   nproc        $NOFILE
 EOF
+fi
+
 }
  
-#set ssh
 sshd_config(){
 
 SSHD_CONFIG="/etc/ssh/sshd_config"
@@ -49,7 +75,7 @@ sed -i 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' $SSHD_CONFIG
 sed -i 's/#UseDNS yes/UseDNS no/' $SSHD_CONFIG
 #sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
 sed -i 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g' $SSHD_CONFIG
-sed -i 's|#Port\ 22|Port\ 52113|g' $SSHD_CONFIG
+sed -i "s|#Port\ 22|Port\ $SSH_PORT|g" $SSHD_CONFIG
 sed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG
 sed -i 's|ChallengeResponseAuthentication\ yes|ChallengeResponseAuthentication\ no|g' $SSHD_CONFIG
 sed -i 's|\#RSAAuthentication\ yes|RSAAuthentication\ yes|g' $SSHD_CONFIG
@@ -66,11 +92,11 @@ fi
 
 }
   
-#set sysctl
 sysctl_config(){
 RANM=`echo $RANDOM`
-cp /etc/sysctl.conf /et/sysctl.conf.bak.$RANM
-cat > /etc/sysctl.conf << EOF
+SYSCTL="/etc/sysctl.conf"
+/bin/cp "$SYSCTL" "$SYSCTL".bak.$RANM
+cat > $SYSCTL << EOF
 # Controls the System Request debugging functionality of the kernel
 kernel.sysrq = 0
 
@@ -314,7 +340,6 @@ EOF
 echo "sysctl set OK!!"
 }
   
-#disable selinux
 selinux_config(){
 sed -i '/SELINUX/s/enforcing/disabled/' /etc/selinux/config
 setenforce 0
@@ -338,7 +363,7 @@ cat > /etc/sysconfig/iptables << EOF
 -A INPUT -i lo -j ACCEPT
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
--A INPUT -p tcp -m state --state NEW -m tcp --dport 52113 -j ACCEPT
+-A INPUT -p tcp -m state --state NEW -m tcp --dport $SSH_PORT -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
 -A INPUT -p icmp -m limit --limit 100/sec --limit-burst 100 -j ACCEPT
 -A INPUT -p icmp -m limit --limit 1/s --limit-burst 10 -j ACCEPT
@@ -348,7 +373,6 @@ cat > /etc/sysconfig/iptables << EOF
 -A syn-flood -j REJECT --reject-with icmp-port-unreachable
 COMMIT
 EOF
-#/sbin/service iptables restart
 /usr/bin/systemctl restart iptables.service
 /usr/bin/systemctl restart ip6tables
 }
@@ -371,7 +395,12 @@ else
   echo -e "\033[31m press ctrl+C to cancel \033[0m"
   sleep 6
   main
-  touch $LOCK_FILE
+  /bin/touch $LOCK_FILE
 fi
 
-
+# # https://github.com/linuxsun
+# 
+# # https://github.com/linuxsun/tools.git
+# https://klaver.it/linux/sysctl.conf
+# https://wiki.archlinux.org/index.php/sysctl
+# https://github.com/linuxsun

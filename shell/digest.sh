@@ -58,3 +58,4 @@ else
 fi
 
 exec "$PRGDIR"/"$EXECUTABLE" -server org.apache.catalina.realm.RealmBase "$@"
+# https://github.com/linuxsun

@@ -218,3 +218,4 @@ set_mirror(){
     exit 1
 }
 set_mirror
+# https://github.com/linuxsun

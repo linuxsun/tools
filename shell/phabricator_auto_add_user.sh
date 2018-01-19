@@ -81,3 +81,4 @@ EOF
 fi
   echo "$(date) $USERNAME $CNNAME $PASSWORD $EMAIL" >> $OUT_PUT
 done < $USER_NAME_LIST
+# https://github.com/linuxsun
