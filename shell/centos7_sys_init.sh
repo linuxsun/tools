@@ -56,7 +56,7 @@ then
 fi
 
 ulimit -SHn $MEMTOTAL
-/bin/grep "$MEMTOTAL" "$LIMITS" > /dev/null ;ret=$?
+/bin/grep "$NOFILE" "$LIMITS" > /dev/null ;ret=$?
 if [ $ret -eq 1 ];then
 cat >> $LIMITS << EOF
  *           soft   nofile       $NOFILE
