@@ -52,3 +52,4 @@ C:\Python27\python.exe jenkins\jenkins_update_jobs_config_xml.py %config_xml_roo
 ```
 
 
+https://github.com/linuxsun/tools.git
