@@ -27,6 +27,7 @@ Jenkins是主、从模式，构建分两步：
 一步是build构建，参数化构建的参数和值，可以参考config-build.xml文件
 
 另外一步是deploy，会在jenkins从服务器上执行，这个步骤也需要和第一步提供相同的参数，可以参考config-deploy.xml文件。
+部署界面请参考： https://github.com/linuxsun/tools/blob/master/playbook/saturn/jenkins-saturn.png
 
 
 ## 二、 自动部署Saturn-Console
