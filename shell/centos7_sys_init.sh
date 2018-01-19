@@ -389,18 +389,18 @@ sshd_config
 
 if [ -f $LOCK_FILE ]; then
   echo "locking..."
-  echo 'exec: rm $LOCK_FILE'
+  echo -e "\033[31m>>> delete $LOCK_FILE \033[0m"
   exit 1
 else
   echo -e "\033[31m press ctrl+C to cancel \033[0m"
   sleep 6
   main
-  /bin/touch $LOCK_FILE
+  /bin/touch "$LOCK_FILE"
 fi
 
-# # https://github.com/linuxsun
+# https://github.com/linuxsun
 # 
-# # https://github.com/linuxsun/tools.git
+# https://github.com/linuxsun/tools.git
 # https://klaver.it/linux/sysctl.conf
 # https://wiki.archlinux.org/index.php/sysctl
 # https://github.com/linuxsun
