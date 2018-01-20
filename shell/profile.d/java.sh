@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
-JDK_PATH="/application/java/jdk1.8.0_111"
+DEFAULT_JDK_PATH="/data/java/jdk1.8.0_111"
+DEST="/etc/profile.d/java.sh"
+VARS=0
 hava_tty=0
 
 if [ "`tty`" != "not a tty" ]; then
     have_tty=1
 fi
 
-if [ "$#" -eq 0 ]; then
-    VARS=set
+if [ "$#" -eq 2 ]; then
+    VARS=$1
+    JDK_PATH=$2
+elif [ "$#" -eq 1 ]; then
+    VARS=$1
+    JDK_PATH=$DEFAULT_JDK_PATH
 else
-    VARS="$1"
+    VARS=set
+    JDK_PATH=$DEFAULT_JDK_PATH
 fi
 
 HELP(){
-  echo "source /etc/profile.d/java.sh [set|unset]"
+  echo -e """\033[31m>>> /bin/cp java.sh $DEST
+>>> source $DEST [set /data/java/jdkX.Y.Z_XYZ] OR [set|unset] \033[0m"""
 }
 
 case $VARS in
@@ -43,5 +51,3 @@ case $VARS in
 esac
 
 # https://github.com/linuxsun/tools.git
-
-
