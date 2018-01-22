@@ -14,7 +14,7 @@ IPTABLES="/etc/sysconfig/iptables"
 
 rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm
 yum -y install mesosphere-zookeeper
-yum -y install mesos marathon
+yum -y install mesos marathon.x86_64
 
 hostname $MESOS_MASTER_NAME
 tee /etc/hostname <<- EOF
@@ -77,77 +77,52 @@ EOF
 tee /etc/mesos-acls <<- EOF
 {
     "run_tasks": [
+    {
+      "principals": {
+        "type": "ANY"
+      },
+      "users": {
+        "type": "ANY"
+      }
+    }
+  ],
+  "register_frameworks": [
+    {
+      "principals": {
+        "type": "ANY"
+      },
+      "roles": {
+        "type": "ANY"
+      }
+    }
+  ]
+}
+EOF
+echo 'file:///etc/mesos-acls' > /etc/mesos-master/acls
+
+ADD_WITH_SALT=`echo "$RANDOM"pyqZhmdDfBSO4kEH"$RANDOM"`
+tee /etc/mesos/credentials <<- EOF
+{
+    "credentials": [
         {
-            "principals": {
-                "type": "ANY"
-            },
-            "users": {
-                "type": "ANY"
-            }
-        }
-    ],
-    "register_frameworks": [
-        {
-            "principals": {
-                "type": "ANY"
-            },
-            "roles": {
-                "type": "ANY"
-            }
-        }
-    ],
-    "reserve_resources": [
-        {
-            "principals": {
-                "type": "ANY"
-            },
-            "roles": {
-                "type": "ANY"
-            },
-            "resources": {
-                "type": "ANY"
-            }
-        }
-    ],
-    "unreserve_resources": [
-        {
-            "principals": {
-                "type": "ANY"
-            },
-            "roles": {
-                "type": "ANY"
-            },
-            "reserver_principals": {
-                "type": "ANY"
-            }
-        }
-    ],
-    "create_volumes": [
-        {
-            "principals": {
-                "type": "ANY"
-            },
-            "roles": {
-                "type": "ANY"
-            }
-        }
-    ],
-    "destroy_volumes": [
-        {
-            "principals": {
-                "type": "ANY"
-            },
-            "roles": {
-                "type": "ANY"
-            },
-            "creator_principals": {
-                "type": "ANY"
-            }
+        "principal": "marathon",
+        "secret": "$ADD_WITH_SALT"
         }
     ]
 }
 EOF
-echo 'file:///etc/mesos-acls' > /etc/mesos-master/acls
+
+tee /etc/mesos/marathon.secret <<- EOF
+$ADD_WITH_SALT
+EOF
+
+tee /etc/mesos-master/credentials <<- EOF
+file:///etc/mesos/credentials
+EOF
+
+test -d /etc/marathon/conf || mkdir -p /etc/marathon/conf
+echo 'marathon' > /etc/marathon/conf/mesos_authentication_principal
+echo 'marathon' > /etc/marathon/conf/mesos_role
 
 tee $IPFWS <<- EOF
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -j ACCEPT
@@ -187,4 +162,12 @@ systemctl restart mesos-master.service
 systemctl status mesos-master.service
 systemctl restart marathon.service
 systemctl status marathon.service
+
 # https://github.com/linuxsun
+# https://coolex.info/blog/523.html
+# https://yuerblog.cc/2017/02/10/marathon-persistent-volumes/
+# https://mesosphere.github.io/marathon/docs/framework-authentication.html
+# http://mesos.apache.org/documentation/latest/authentication/
+# 
+
+
