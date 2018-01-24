@@ -43,6 +43,11 @@
       group: sysadmin
       #mode: 0755
 
+  - name: install lsof
+    yum:
+      name: lsof
+      state: latest
+
   - name: unzip
     unarchive:
       src: "saturn-executor-{{ EXECUTOR_VERSION }}-zip.zip"
