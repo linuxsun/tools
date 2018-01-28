@@ -1,30 +1,33 @@
 ---
 - hosts: localhost
-  remote_user: sysadmin
+  remote_user: root
 
   vars:
     tomcat_version: "{{ tomcat_version_jk | default('8.0.49') }}"
     tomcat_native_version: "{{ tomcat_native_version_jk | default('1.2.16') }}"
-    tomcat_dl_url: "{{ tomcat_dl_url_jk | default('http://192.168.30.247/t/tomcat') }}"
+    tomcat_dl_url: "{{ tomcat_dl_url_jk | default('http://192.168.10.11/t/tomcat') }}"
     tomcat_user_name: "{{ tomcat_user_name_jk | default('sysadmin')  }}"
-    tomcat_group_name: "{{ tomcat_group_name_jk | default('sysadmin')  }}"
+    tomcat_group_name: "{{ tomcat_group_name_jk | default('sysadmin') }}"
     tomcat_password: "{{ tomcat_password_jk | default('yg8AHjUjgjDl94dB')  }}"
 
     tomcat_base_dir: "{{ tomcat_base_dir_jk | default('/data/tomct') }}"
     tomcat_use_apr: "{{ tomcat_use_apr_jk | default(true) }}"
-    tomcat_apr_dir: "{{ tomcat_base_dir }}/apr"
-    tomcat_port_shutdown: "{{ tomcat_port_shutdown_jk | default('8005')}}"
-    tomcat_port_connetctor: "{{ tomcat_port_connetctor_jk | default('8080')}}"
-    tomcat_port_redirect: "{{ tomcat_port_redirect_jk | default('8443')}}"
-    tomcat_port_ajp: "{{ tomcat_port_ajp_jk | default('8009')}}"
-    tomcat_java_opts: "{{ tomcat_java_opts | default('') }}"
+    tomcat_apr_install_dir: "{{ tomcat_base_dir }}/apr"
+    tomcat_apr_lib_dir: "{{ tomcat_apr_install_dir }}/lib"
+    tomcat_port_shutdown: "{{ tomcat_port_shutdown_jk | default(8005)}}"
+    tomcat_port_connector: "{{ tomcat_port_connector_jk | default(8080)}}"
+    tomcat_port_redirect: "{{ tomcat_port_redirect_jk | default(8443)}}"
+    tomcat_override_uri_encoding: "{{ tomcat_override_uri_encoding_jk | default('')}}"
+    tomcat_port_ajp: "{{ tomcat_port_ajp_jk | default(8009)}}"
+    tomcat_java_opts: "{{ tomcat_java_opts_jk | default('') }}"
     tomcat_catalina_opts: "{{ tomcat_catalina_opts_jk | default('') }}"
-    #tomcat_base_dir_randomn: "{{ tomcat_base_dir_randomn_jk | default('') }}"
-    tomcat_setenv_sh: "{{ tomcat_setenv_sh_jk | default('false') }}"
-    tomcat_tmp_dir: /tmp
+    tomcat_setenv_sh: "{{ tomcat_setenv_sh_jk | default('') }}"
+    tomcat_tmp_dir: "{{ tomcat_tmp_dir_jk | default('/tmp') }}"
+    tomcat_enable_gui: "{{ tomcat_enable_gui_jk | default('') }}" # --extra-vars='tomcat_enable_gui_jk='     # disable
+                                                                  # --extra-vars='tomcat_enable_gui_jk=true' # enable
 
-    tomcat_enable_gui: "{{ tomcat_enable_gui_jk | default('true') }}"
-    tomcat_roles:
+    #tomcat_roles: "" # disable
+    tomcat_roles:     # enable
       - manager
       - manager-gui
       - manager-script
@@ -33,6 +36,12 @@
       - admin-gui
       - admin-script 
 
+    #tomcat_users: [] # disable
+    tomcat_users:     # enable
+      - name: tomcat
+        password: "{{ tomcat_password }}"
+        roles: "manager-gui,admin-gui"
+  
   tasks:
     - name: install package
       yum: name={{ item }} state=present
@@ -57,27 +66,20 @@
         #append: yes
 
     - set_fact:
-        RANDOM_PATH: "{{ 100 | random }}"
-      run_once: yes
-      #when: (not tomcat_base_dir_randomn)
+        RANDOM_VARS_NUM: "{{ 100 | random }}"
+        run_once: yes
 
     - file:
-        path: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}"
+        path: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_VARS_NUM }}"
         state: directory
         mode: 0755
         owner: "{{ tomcat_user_name }}"
         group: "{{ tomcat_group_name }}"
-      #when: (not tomcat_base_dir_randomn)
 
-    #- file:
-    #    path: "{{ tomcat_base_dir }}/{{ tomcat_base_dir_randomn }}"
-    #    state: directory
-    #    mode: 0755
-    #    owner: "{{ tomcat_user_name }}"
-    #    group: "{{ tomcat_group_name }}"
-    #  when: (tomcat_base_dir_randomn)
+    - set_fact:
+        tomcat_work_dir: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_VARS_NUM }}/apache-tomcat-{{ tomcat_version }}"
 
-    - name: Download Tomcat8
+    - name: download tomcat8
       ignore_errors: True
       register: downlad_tomcat_status
       get_url:
@@ -89,36 +91,45 @@
       tags:
         download_tomcat8
 
+    # 如果无法从外网下载apache-tomcat-8.0.49.tar.gz,则从内网mirror下载。
+    # 请在jenkins增加多一步下载tomcat8的shell指令，此shell指令必须在此playbook之前运行:
+    # test -f apache-tomcat-{{ tomcat_version }}.tar.gz || \
+    # /bin/wget {{ tomcat_dl_url }}/apache-tomcat-{{ tomcat_version }}.tar.gz 
+
     - copy:
         src: "{{ tomcat_tmp_dir }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
         dest: "{{ tomcat_tmp_dir }}"
         owner: "{{ tomcat_user_name }}"
         group: "{{ tomcat_group_name }}"
 
-    #- name: unarchive tomcat8
     - unarchive:
         remote_src: yes
         src: "{{ tomcat_tmp_dir }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
-        dest: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}"
+        dest: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_VARS_NUM }}"
         owner: "{{ tomcat_user_name }}"
         group: "{{ tomcat_group_name }}"
         keep_newer: yes
 
     - name: unarchive tomcat-native.tar.gz
-      when: tomcat_use_apr 
+      when: "{{ tomcat_use_apr }}"
       unarchive:
         remote_src: yes
-        src: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}/apache-tomcat-{{ tomcat_version }}/bin/tomcat-native.tar.gz"
-        dest: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}/apache-tomcat-{{ tomcat_version }}/bin/"
+        src: "{{ tomcat_work_dir }}/bin/tomcat-native.tar.gz"
+        dest: "{{ tomcat_work_dir }}/bin/"
+        owner: "{{ tomcat_user_name }}"
+        group: "{{ tomcat_group_name }}"
         keep_newer: yes
+
+    - set_fact:
+        tomcat_apr_lib_dir: "{{ tomcat_work_dir }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native"
+      when: tomcat_use_apr
 
     - name: get JAVA_HOME
       shell: 'echo $JAVA_HOME'
       register: JAVA_HOME_PATH
-      when: tomcat_use_apr
 
     - file:
-        path: "{{ tomcat_apr_dir }}"
+        path: "{{ tomcat_apr_install_dir }}"
         state: directory
         mode: 0755
         owner: "{{ tomcat_user_name }}"
@@ -133,49 +144,68 @@
         --with-apr=/usr/bin/apr-1-config
         --with-ssl
         --with-java-home={{ JAVA_HOME_PATH.stdout }}
-        --prefix="{{ tomcat_apr_dir }}"
-        chdir="{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}/apache-tomcat-{{ tomcat_version }}/bin/tomcat-native-{{tomcat_native_version }}-src/native"
+        --prefix="{{ tomcat_apr_install_dir }}"
+        chdir="{{ tomcat_apr_lib_dir }}"
 
     - make:
-        chdir: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}/apache-tomcat-{{ tomcat_version }}/bin/tomcat-native-{{tomcat_native_version }}-src/native"
+        chdir: "{{ tomcat_apr_lib_dir }}"
       when: tomcat_use_apr
 
     - name: chekc apr
-      shell: "/bin/ls {{ tomcat_base_dir }}/tomcat-{{ RANDOM_PATH }}/apache-tomcat-{{ tomcat_version }}/bin/tomcat-native-{{tomcat_native_version }}-src/native/.libs | /bin/grep -E '(libtcnative-1.la|libtcnative-1.so)'|wc -l"
+      shell: "/bin/ls {{ tomcat_apr_lib_dir }}/.libs | /bin/grep -E '(libtcnative-1.la|libtcnative-1.so)'|wc -l"
       register: __no_found_apr
       when: tomcat_use_apr
       ignore_errors: True
 
-    - template:
-        src: template/apr.conf.j2
-        dest: /etc/ld.so.conf.d/apr.conf
-        mode: 0644
-        #when: (__no_found_apr.stdout == 4 and tomcat_use_apr)
+    #- template:
+    #    src: template/apr.conf.j2
+    #    dest: /etc/ld.so.conf.d/apr.{{ RANDOM_VARS_NUM }}.conf
+    #    mode: 0644
+
+    #- template:
+    #    src: template/apr.env.sh.j2
+    #    dest: /etc/profile.d/apr.env.{{ RANDOM_VARS_NUM }}.sh
+    #    mode: 0644
+
+    #- name: ldconfig apr.conf
+    #  when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
+    #  shell: /sbin/ldconfig /etc/ld.so.conf.d/apr.{{ RANDOM_VARS_NUM }}.conf
+    #  become: yes
+    #  #args: 
+    #  #  executable: /bin/bash -l
+
+    #- name: source /etc/profile.d/apr.env.sh
+    #  when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
+    #  shell: source /etc/profile.d/apr.env.{{ RANDOM_VARS_NUM }}.sh
+    #  become: yes
 
     - template:
-        src: template/apr.env.sh.j2
-        dest: /etc/profile.d/apr.env.sh
+        src: template/setenv.sh.j2
+        dest: "{{ tomcat_work_dir }}/bin/setenv.sh"
+        mode: 0755
+
+    - name: add "tomcat-{{ RANDOM_VARS_NUM }}.service" to /etc/systemd/system
+      template:
+        src: template/tomcat.service.j2
+        dest: "/etc/systemd/system/tomcat-{{ RANDOM_VARS_NUM }}.service"
         mode: 0644
 
-    - name: ldconfig apr.conf
-      shell: /sbin/ldconfig /etc/ld.so.conf.d/apr.conf
-      when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
+    - name: systemctl start tomcat-{{ RANDOM_VARS_NUM }}.service
+      systemd:
+        name: "tomcat-{{ RANDOM_VARS_NUM }}"
+        enabled: yes
+        state: started
+        daemon_reload: yes
 
-    - name: source /etc/profile.d/apr.env.sh
-      shell: source /etc/profile.d/apr.env.sh
-      when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
+    - name: copy template/server.xml.j2
+      template:
+        src: template/server.xml.j2
+        dest: "{{ tomcat_work_dir }}/conf/server.xml"
+        mode: 0644
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    - name: copy template/tomcat-users.xml.j2
+      template:
+        src: template/tomcat-users.xml.j2
+        dest: "{{ tomcat_work_dir }}/conf/tomcat-users.xml"
+        mode: 0644
 
