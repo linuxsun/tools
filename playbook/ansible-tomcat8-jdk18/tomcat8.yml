@@ -1,6 +1,7 @@
 ---
 - hosts: localhost
   remote_user: root
+  #gather_facts: true
 
   vars:
     tomcat_version: "{{ tomcat_version_jk | default('8.0.49') }}"
@@ -52,6 +53,8 @@
       - apr-util-devel
       - openssl
       - openssl-devel
+      - libselinux-python
+      - make
 
     - group:
         name: "{{ tomcat_group_name }}"
@@ -79,28 +82,28 @@
     - set_fact:
         tomcat_work_dir: "{{ tomcat_base_dir }}/tomcat-{{ RANDOM_VARS_NUM }}/apache-tomcat-{{ tomcat_version }}"
 
-    - name: download tomcat8
-      ignore_errors: True
-      register: downlad_tomcat_status
-      get_url:
-        dest: "{{ tomcat_tmp_dir }}"
-        url: "{{ item }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
-      with_items: "{{ tomcat_dl_url }}"
-      async: 300
-      poll: 3
-      tags:
-        download_tomcat8
+    #- name: download tomcat8
+    #  ignore_errors: True
+    #  register: downlad_tomcat_status
+    #  get_url:
+    #    dest: "{{ tomcat_tmp_dir }}"
+    #    url: "{{ item }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    #  with_items: "{{ tomcat_dl_url }}"
+    #  async: 300
+    #  poll: 3
+    #  tags:
+    #    download_tomcat8
 
-    # 如果无法从外网下载apache-tomcat-8.0.49.tar.gz,则从内网mirror下载。
-    # 请在jenkins增加多一步下载tomcat8的shell指令，此shell指令必须在此playbook之前运行:
     # test -f apache-tomcat-{{ tomcat_version }}.tar.gz || \
     # /bin/wget {{ tomcat_dl_url }}/apache-tomcat-{{ tomcat_version }}.tar.gz 
 
     - copy:
-        src: "{{ tomcat_tmp_dir }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
-        dest: "{{ tomcat_tmp_dir }}"
+        #src: "{{ tomcat_tmp_dir }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        src: "apache-tomcat-{{ tomcat_version }}.tar.gz"
+        dest: "{{ tomcat_tmp_dir }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
         owner: "{{ tomcat_user_name }}"
         group: "{{ tomcat_group_name }}"
+        #ignore_errors: True
 
     - unarchive:
         remote_src: yes
@@ -124,8 +127,13 @@
         tomcat_apr_lib_dir: "{{ tomcat_work_dir }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native"
       when: tomcat_use_apr
 
+    - name: tomcat_apr_1_config
+      shell: '/bin/echo $(/usr/bin/which apr-1-config)'
+      register: TOMCAT_APR_1_CONFIG
+      when: tomcat_use_apr
+
     - name: get JAVA_HOME
-      shell: 'echo $JAVA_HOME'
+      shell: '/bin/echo $JAVA_HOME'
       register: JAVA_HOME_PATH
 
     - file:
@@ -136,12 +144,12 @@
         group: "{{ tomcat_group_name }}"
 
     - name: configure apr
-      when: tomcat_use_apr
+      when: (tomcat_use_apr and TOMCAT_APR_1_CONFIG.changed)
       register: tomcat_apr_configure
       ignore_errors: True
       command: >
         ./configure
-        --with-apr=/usr/bin/apr-1-config
+        --with-apr={{ TOMCAT_APR_1_CONFIG.stdout }}
         --with-ssl
         --with-java-home={{ JAVA_HOME_PATH.stdout }}
         --prefix="{{ tomcat_apr_install_dir }}"
@@ -209,3 +217,9 @@
         dest: "{{ tomcat_work_dir }}/conf/tomcat-users.xml"
         mode: 0644
 
+# https://github.com/ChristopherDavenport/ansible-role-universal-tomcat.git
+# https://github.com/linuxsun/tools.git
+# https://stackoverflow.com/questions/18900236/run-command-on-the-ansible-host
+# https://stackoverflow.com/questions/35105615/ansible-use-default-if-a-variable-is-not-defined
+# https://github.com/ansible/ansible/issues/12208
+#
