@@ -32,7 +32,7 @@ ansible-playbook -vv jdk18.yml --connection=local
 ansible-playbook -vv jdk18.yml --connection=local \
 --extra-vars='jdk_dl_url=http://192.168.10.20/j/jdk' \
 --extra-vars='jdk_version="8u111"' \
---extra-vars=jdk_version2='"1.8.0_111"' \
+--extra-vars='jdk_version2="1.8.0_111"' \
 --extra-vars='jdk_package_name="jdk-{{ jdk_version }}-linux-x64.tar.gz"' \
 --extra-vars='jdk_user_name="admin"' \
 --extra-vars='jdk_group_name="admin"' \
