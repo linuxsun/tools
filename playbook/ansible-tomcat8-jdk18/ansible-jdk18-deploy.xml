@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>10</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_dl_url</name>
+          <description></description>
+          <defaultValue>http://192.168.10.20/j/jdk</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_version</name>
+          <description></description>
+          <defaultValue>8u111</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_version2</name>
+          <description></description>
+          <defaultValue>1.8.0_111</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_package_name</name>
+          <description></description>
+          <defaultValue>jdk-{{ jdk_version }}-linux-x64.tar.gz</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_user_name</name>
+          <description></description>
+          <defaultValue>sysadmin</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_group_name</name>
+          <description></description>
+          <defaultValue>sysadmin</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_work_dir</name>
+          <description></description>
+          <defaultValue>/data/java</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_home_dir</name>
+          <description></description>
+          <defaultValue>{{ jdk_work_dir }}/jdk{{ jdk_version2 }}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>jdk_tmp_dir</name>
+          <description></description>
+          <defaultValue>/tmp</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>linux-build-node-1</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact plugin="copyartifact@1.39">
+      <project>ansible-jdk18-build</project>
+      <filter>**/*.*</filter>
+      <target>${WORKSPACE}</target>
+      <excludes></excludes>
+      <selector class="hudson.plugins.copyartifact.StatusBuildSelector"/>
+      <doNotFingerprintArtifacts>false</doNotFingerprintArtifacts>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@0.8">
+      <playbook>playbook/ansible-tomcat8-jdk18/jdk18.yml</playbook>
+      <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
+      <limit></limit>
+      <tags></tags>
+      <skippedTags></skippedTags>
+      <startAtTask></startAtTask>
+      <credentialsId></credentialsId>
+      <vaultCredentialsId></vaultCredentialsId>
+      <sudo>true</sudo>
+      <sudoUser></sudoUser>
+      <forks>5</forks>
+      <unbufferedOutput>true</unbufferedOutput>
+      <colorizedOutput>false</colorizedOutput>
+      <hostKeyChecking>false</hostKeyChecking>
+      <additionalParameters>--connection=local --extra-vars=&quot;jdk_dl_url=$jdk_dl_url&quot;  --extra-vars=&quot;jdk_version=$jdk_version&quot;  --extra-vars=&quot;jdk_version2=$jdk_version2&quot;  --extra-vars=&quot;jdk_package_name=$jdk_package_name&quot;  --extra-vars=&quot;jdk_user_name=$jdk_user_name&quot;  --extra-vars=&quot;jdk_group_name=$jdk_group_name&quot;  --extra-vars=&quot;jdk_work_dir=$jdk_work_dir&quot;   --extra-vars=&quot;jdk_home_dir=$jdk_home_dir&quot;  --extra-vars=&quot;jdk_tmp_dir=$jdk_tmp_dir&quot;     </additionalParameters>
+      <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
+    </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
