@@ -42,6 +42,26 @@ ansible-playbook -vv jdk18.yml --connection=local \
 
 ```
 
+### 1.3 添加到 jenkins
+
+
+前往jenkins管理后台，创建两个"构建一个自由风格的软件项目"。
+
+```
+ansible-jdk18-build
+ansible-jdk18-deploy
+```
+
+将tools/playbook/ansible-tomcat8-jdk18/ansible-jdk18-build.xml文件，上传到：/root/.jenkins/jobs/ansible-jdk18-build/config.xml
+将tools/playbook/ansible-tomcat8-jdk18/ansible-jdk18-deploy.xml文件，上传到：/root/.jenkins/jobs/ansible-jdk18-deoloy/config.xml
+
+重新 reload jenkins
+
+
+效果展示:
+
+[show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/ansible-jdk18-build.png)
+
 
 ## source /etc/profile.d/java.sh
 
