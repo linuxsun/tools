@@ -28,6 +28,7 @@ ansible-playbook -vv jdk18.yml --connection=local
 
 ### 1.2 custom
 
+```
 ansible-playbook -vv jdk18.yml --connection=local --extra-vars='jdk_dl_url=http://192.168.10.20/j/jdk' \
 --extra-vars='jdk_version="8u111"' \
 --extra-vars=jdk_version2='"1.8.0_111"' \
@@ -37,6 +38,7 @@ ansible-playbook -vv jdk18.yml --connection=local --extra-vars='jdk_dl_url=http:
 --extra-vars='jdk_work_dir="/data/java"' \
 --extra-vars='jdk_home_dir="{{ jdk_work_dir }}/jdk{{ jdk_version2 }}"' \
 --extra-vars='jdk_tmp_dir="/tmp"'
+```
 
 
 ## source /etc/profile.d/java.sh
@@ -52,6 +54,7 @@ ansible-playbook -v tomcat8.yml --connection=local
 
 ### 2.2 custom
 
+```
 ansible-playbook -v tomcat8.yml --connection=local \
 --extra-vars='tomcat_version_jk="8.0.49"' \
 --extra-vars='tomcat_native_version_jk="1.2.16"' \
@@ -71,7 +74,7 @@ ansible-playbook -v tomcat8.yml --connection=local \
 --extra-vars='tomcat_setenv_sh_jk=' \
 --extra-vars='tomcat_tmp_dir_jk=/tmp' \
 --extra-vars='tomcat_enable_gui_jk=' 
-
+```
 
 
 
