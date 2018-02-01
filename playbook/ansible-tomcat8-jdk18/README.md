@@ -24,8 +24,8 @@ ansible-playbook -vv jdk18.yml --connection=local --extra-vars='jdk_dl_url=http:
 --extra-vars='jdk_version="8u111"' \
 --extra-vars=jdk_version2='"1.8.0_111"' \
 --extra-vars='jdk_package_name="jdk-{{ jdk_version }}-linux-x64.tar.gz"' \
---extra-vars='jdk_user_name="sysadmin"' \
---extra-vars='jdk_group_name="sysadmin"' \
+--extra-vars='jdk_user_name="admin"' \
+--extra-vars='jdk_group_name="admin"' \
 --extra-vars='jdk_work_dir="/data/java"' \
 --extra-vars='jdk_home_dir="{{ jdk_work_dir }}/jdk{{ jdk_version2 }}"' \
 --extra-vars='jdk_tmp_dir="/tmp"'

@@ -1,6 +1,6 @@
 ---
 - hosts: localhost
-  remote_user: root
+  remote_user: sysadmin
   #gather_facts: true
 
   vars:
@@ -145,7 +145,6 @@
 
     - name: configure apr
       when: (tomcat_use_apr and TOMCAT_APR_1_CONFIG.changed)
-      register: tomcat_apr_configure
       ignore_errors: True
       command: >
         ./configure
