@@ -60,7 +60,7 @@ ansible-jdk18-deploy
 
 效果展示:
 
-[show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/ansible-jdk18-build.png)
+# ![show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/ansible-jdk18-build.png)
 
 
 ## source /etc/profile.d/java.sh
