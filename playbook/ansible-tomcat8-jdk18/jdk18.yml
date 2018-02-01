@@ -1,0 +1,59 @@
+---
+- hosts: localhost
+  remote_user: sysadmin
+  #gather_facts: true
+
+  vars:
+    jdk_dl_url: "http://192.168.10.20/j/jdk"
+    jdk_version: "8u111"
+    jdk_version2: "1.8.0_111"
+    jdk_package_name: "jdk-{{ jdk_version }}-linux-x64.tar.gz"
+    jdk_user_name: "sysadmin"
+    jdk_group_name: "sysadmin"
+    jdk_work_dir: "/data/java"
+    jdk_home_dir: "{{ jdk_work_dir }}/jdk{{ jdk_version2 }}"
+    jdk_tmp_dir: "/tmp"
+
+  tasks:
+    - group:
+        name: "{{ jdk_user_name }}"
+        state: present
+
+    - user:
+        name: "{{ jdk_user_name }}" 
+        group: "{{ jdk_group_name }}"
+        shell: /bin/bash
+
+    #- name: download "{{ jdk_package_name }}"
+    #  ignore_errors: True
+    #  async: 300
+    #  poll: 3
+    #  get_url:
+    #    dest: "{{ jdk_tmp_dir }}"
+    #    url: "{{ jdk_dl_url }}/{{ jdk_package_name }}"
+
+    - copy:
+        src: "{{ jdk_package_name }}"
+        #src: "{{ jdk_tmp_dir }}/{{ jdk_package_name }}"
+        dest: "{{ jdk_tmp_dir }}/{{ jdk_package_name }}"
+        owner: "{{ jdk_user_name }}"
+        group: "{{ jdk_group_name }}"
+
+    - unarchive:
+        remote_src: yes
+        src: "{{ jdk_tmp_dir }}/{{ jdk_package_name }}"
+        dest: "{{ jdk_work_dir }}"    
+        owner: "{{ jdk_user_name }}"
+        group: "{{ jdk_group_name }}"
+
+    - template:
+        src: template/java.sh.j2
+        dest: /etc/profile.d/java.sh
+        owner: "{{ jdk_user_name }}"
+        group: "{{ jdk_group_name }}"
+
+    - name: 
+      shell: sh /etc/profile.d/java.sh
+      ignore_errors: True
+
+

@@ -13,10 +13,28 @@ cd ./tools/playbook/ansible-tomcat8-jdk18/
 
 ## 1. deploy jdk1.8
 
-...
+### 1.1 demo
+
+ansible-playbook -vv jdk18.yml --connection=local
+
+
+### 1.2 custom
+
+ansible-playbook -vv jdk18.yml --connection=local --extra-vars='jdk_dl_url=http://192.168.10.20/j/jdk' \
+--extra-vars='jdk_version="8u111"' \
+--extra-vars=jdk_version2='"1.8.0_111"' \
+--extra-vars='jdk_package_name="jdk-{{ jdk_version }}-linux-x64.tar.gz"' \
+--extra-vars='jdk_user_name="sysadmin"' \
+--extra-vars='jdk_group_name="sysadmin"' \
+--extra-vars='jdk_work_dir="/data/java"' \
+--extra-vars='jdk_home_dir="{{ jdk_work_dir }}/jdk{{ jdk_version2 }}"' \
+--extra-vars='jdk_tmp_dir="/tmp"'
+
+
+## source /etc/profile.d/java.sh
+
 
 ## 2. deploy tomcat8
-
 
 
 ### 2.1 demo
