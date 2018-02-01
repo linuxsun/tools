@@ -114,7 +114,7 @@
         keep_newer: yes
 
     - name: unarchive tomcat-native.tar.gz
-      when: "{{ tomcat_use_apr }}"
+      when: "(tomcat_use_apr)"
       unarchive:
         remote_src: yes
         src: "{{ tomcat_work_dir }}/bin/tomcat-native.tar.gz"
@@ -125,12 +125,12 @@
 
     - set_fact:
         tomcat_apr_lib_dir: "{{ tomcat_work_dir }}/bin/tomcat-native-{{ tomcat_native_version }}-src/native"
-      when: tomcat_use_apr
+      when: "(tomcat_use_apr)" 
 
     - name: tomcat_apr_1_config
       shell: '/bin/echo $(/usr/bin/which apr-1-config)'
       register: TOMCAT_APR_1_CONFIG
-      when: tomcat_use_apr
+      when: "(tomcat_use_apr)" 
 
     - name: get JAVA_HOME
       shell: '/bin/echo $JAVA_HOME'
@@ -144,7 +144,7 @@
         group: "{{ tomcat_group_name }}"
 
     - name: configure apr
-      when: (tomcat_use_apr and TOMCAT_APR_1_CONFIG.changed)
+      when: "(tomcat_use_apr and TOMCAT_APR_1_CONFIG.changed)"
       ignore_errors: True
       command: >
         ./configure
@@ -156,12 +156,12 @@
 
     - make:
         chdir: "{{ tomcat_apr_lib_dir }}"
-      when: tomcat_use_apr
+      when: "(tomcat_use_apr)" 
 
     - name: chekc apr
       shell: "/bin/ls {{ tomcat_apr_lib_dir }}/.libs | /bin/grep -E '(libtcnative-1.la|libtcnative-1.so)'|wc -l"
       register: __no_found_apr
-      when: tomcat_use_apr
+      when: "(tomcat_use_apr)" 
       ignore_errors: True
 
     #- template:

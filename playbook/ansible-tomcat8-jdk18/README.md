@@ -10,6 +10,14 @@ git clone https://github.com/linuxsun/tools.git
 
 cd ./tools/playbook/ansible-tomcat8-jdk18/
 
+download JDK 1.8
+
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+
+download tomcat8
+
+https://tomcat.apache.org/download-80.cgi
 
 ## 1. deploy jdk1.8
 
@@ -47,11 +55,11 @@ ansible-playbook -v tomcat8.yml --connection=local
 ansible-playbook -v tomcat8.yml --connection=local \
 --extra-vars='tomcat_version_jk="8.0.49"' \
 --extra-vars='tomcat_native_version_jk="1.2.16"' \
---extra-vars='tomcat_user_name_jk=sysadmin' \
---extra-vars='tomcat_group_name_jk=sysadmin' \
+--extra-vars='tomcat_user_name_jk=admin' \
+--extra-vars='tomcat_group_name_jk=admin' \
 --extra-vars='tomcat_password_jk="yg8AHjUjgjDl94dB"' \
 --extra-vars='tomcat_base_dir_jk=/opt/tomcat' \
---extra-vars='tomcat_use_apr_jk=false' \
+--extra-vars="tomcat_use_apr_jk=''" \
 --extra-vars='tomcat_apr_install_dir_jk=""' \
 --extra-vars='tomcat_port_shutdown_jk=8005' \
 --extra-vars='tomcat_port_connector_jk=8080' \
