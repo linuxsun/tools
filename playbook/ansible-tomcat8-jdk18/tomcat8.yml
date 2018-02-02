@@ -133,7 +133,16 @@
       when: "(tomcat_use_apr)" 
 
     - name: get JAVA_HOME
-      shell: '/bin/echo $JAVA_HOME'
+      shell: |
+         if [ "$JAVA_HOME" ]; then
+             /bin/echo "$JAVA_HOME"
+         elif [ -s /etc/profile.d/java.sh ]; then
+             source /etc/profile.d/java.sh
+             /bin/echo "$JAVA_HOME"
+         else
+             /bin/ls -l `/bin/ls -l $(which java) | awk \
+             '{print $11}'` | awk '{print $11}'|cut -d'/' -f1-5
+         fi
       register: JAVA_HOME_PATH
 
     - file:
