@@ -6,12 +6,11 @@ DEFAULT_JDK_PATH="/data/java/jdk1.8.0_111"
 {% endif %}
 DEST="/etc/profile.d/java.sh"
 VARS=0
-#hava_tty=0
-hava_tty=1
+hava_tty=0
 
-#if [ "`tty`" != "not a tty" ]; then
-#    have_tty=1
-#fi
+if [ "`tty`" != "not a tty" ]; then
+    have_tty=1
+fi
 
 if [ "$#" -eq 2 ]; then
     VARS=$1
@@ -31,7 +30,7 @@ HELP(){
 
 case $VARS in
   set)
-  if [ $have_tty -eq 1 ] && [ -z $JAVA_HOME -a -z $CLASSPATH ]; then
+  if [ "$have_tty" -eq 1 ] && [ -z "$JAVA_HOME" -a -z "$CLASSPATH" ]; then
     export JAVA_HOME=$JDK_PATH
     export PATH=$PATH:$JAVA_HOME/bin
     export CLASSPATH=$JAVA_HOME/jre/lib/ext:$JAVA_HOME/lib/tools.jar
@@ -41,7 +40,7 @@ case $VARS in
   fi
 ;;
   unset)
-  if [ $have_tty -eq 1 ] && [ "$VARS" = "unset" ]; then
+  if [ "$have_tty" -eq 1 ] && [ "$VARS" = "unset" ]; then
     export JAVA_HOME=
     export CLASSPATH=
     export JRE_HOME=

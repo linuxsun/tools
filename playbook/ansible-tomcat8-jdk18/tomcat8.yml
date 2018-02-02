@@ -134,7 +134,7 @@
 
     - name: get JAVA_HOME
       shell: |
-         /bin/bash -lc "
+         /bin/bash -lc " \
          if [ "$JAVA_HOME" ]; then
              /bin/echo "$JAVA_HOME"
          elif [ -s /etc/profile.d/java.sh ]; then
