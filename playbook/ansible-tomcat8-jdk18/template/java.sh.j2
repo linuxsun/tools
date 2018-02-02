@@ -6,11 +6,12 @@ DEFAULT_JDK_PATH="/data/java/jdk1.8.0_111"
 {% endif %}
 DEST="/etc/profile.d/java.sh"
 VARS=0
-hava_tty=0
+#hava_tty=0
+hava_tty=1
 
-if [ "`tty`" != "not a tty" ]; then
-    have_tty=1
-fi
+#if [ "`tty`" != "not a tty" ]; then
+#    have_tty=1
+#fi
 
 if [ "$#" -eq 2 ]; then
     VARS=$1
