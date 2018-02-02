@@ -104,6 +104,23 @@ ansible-playbook -v tomcat8.yml --connection=local \
 
 ```
 
+### 2.3 添加到 jenkins
 
+前往jenkins管理后台，创建两个"构建一个自由风格的软件项目":
+```
+ansible-tomcat8-build
+ansible-tomcat8-deploy
+```
 
+将tools/playbook/ansible-tomcat8-jdk18/ansible-tomcat8-build-config.xml文件，
+
+上传到：~/.jenkins/jobs/ansible-tomcat8-build/config.xml
+
+将tools/playbook/ansible-tomcat8-jdk18/ansible-tomcat8-deploy-config.xml文件，
+
+上传到：~/.jenkins/jobs/ansible-tomcat8-deploy/config.xml
+
+首页--> "系统管理" --> "读取设置",使jenkins配置生效。
+
+效果展示:
 
