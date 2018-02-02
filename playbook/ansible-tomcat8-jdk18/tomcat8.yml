@@ -141,7 +141,7 @@
              /bin/echo "$JAVA_HOME"
          else
              /bin/ls -l `/bin/ls -l $(which java) | awk \
-             '{print $11}'` | awk '{print $11}'|cut -d'/' -f1-5
+             '{print $11}'` | awk '{print $11}'|cut -d''/'' -f1-5
          fi
       args:
         executable: "/bin/bash -l"
