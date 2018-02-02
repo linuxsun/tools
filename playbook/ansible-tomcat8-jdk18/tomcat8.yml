@@ -144,7 +144,7 @@
              '{print $11}'` | awk '{print $11}'|cut -d'/' -f1-5
          fi
       args:
-        executable: /bin/bash -l
+        executable: "/bin/bash -l"
       delegate_to: localhost
       register: JAVA_HOME_PATH
 
