@@ -176,28 +176,6 @@
       when: "(tomcat_use_apr)" 
       ignore_errors: True
 
-    #- template:
-    #    src: template/apr.conf.j2
-    #    dest: /etc/ld.so.conf.d/apr.{{ RANDOM_VARS_NUM }}.conf
-    #    mode: 0644
-
-    #- template:
-    #    src: template/apr.env.sh.j2
-    #    dest: /etc/profile.d/apr.env.{{ RANDOM_VARS_NUM }}.sh
-    #    mode: 0644
-
-    #- name: ldconfig apr.conf
-    #  when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
-    #  shell: /sbin/ldconfig /etc/ld.so.conf.d/apr.{{ RANDOM_VARS_NUM }}.conf
-    #  become: yes
-    #  #args: 
-    #  #  executable: /bin/bash -l
-
-    #- name: source /etc/profile.d/apr.env.sh
-    #  when: (__no_found_apr.stdout >= 3 and tomcat_use_apr)
-    #  shell: source /etc/profile.d/apr.env.{{ RANDOM_VARS_NUM }}.sh
-    #  become: yes
-
     - template:
         src: template/setenv.sh.j2
         dest: "{{ tomcat_work_dir }}/bin/setenv.sh"

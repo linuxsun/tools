@@ -68,8 +68,6 @@ ansible-jdk18-deploy
 # ![show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/ansible-jdk18-build.png)
 
 
-## source /etc/profile.d/java.sh
-
 
 ## 2. deploy tomcat8
 
