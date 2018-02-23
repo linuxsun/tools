@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<configuration>
+<property>
+    <name>hive.server2.thrift.client.user</name>
+    <value>root</value>
+    <description>Username to use against thrift client</description>
+  </property>
+  <property>
+    <name>hive.server2.thrift.client.password</name>
+    <value>123456</value>
+    <description>Password to use against thrift client</description>
+
+  </property>
+<property>
+<name>hive.exec.parallel</name>
+<value>true</value>
+<description>Whether to execute jobs in parallel</description>
+</property>
+<property>
+<name>hive.exec.parallel.thread.number</name>
+<value>16</value>
+<description>How many jobs at most can be executed in parallel</description>
+</property>
+<property>  
+  <name>javax.jdo.option.ConnectionURL</name>  
+  <value>jdbc:mysql://192.168.80.188:3306/hive?createDatabaseIfNotExist=true</value>  
+  <description>JDBC connect string for a JDBC metastore</description>  
+</property>  
+  
+<property>  
+  <name>javax.jdo.option.ConnectionDriverName</name>  
+  <value>com.mysql.jdbc.Driver</value>  
+  <description>Driver class name for a JDBC metastore</description>  
+</property>  
+  
+<property>  
+  <name>javax.jdo.option.ConnectionUserName</name>  
+  <value>hive</value>  
+  <description>username to use against metastore database</description>  
+</property>  
+  
+<property>  
+  <name>javax.jdo.option.ConnectionPassword</name>  
+  <value>hiveYHN</value>  
+  <description>password to use against metastore database</description>  
+</property>  
+
+<property>
+    <name>hive.hwi.war.file</name>
+    <value>lib/hive-hwi-2.1.1.war</value>
+    <description>This sets the path to the HWI war file, relative to ${HIVE_HOME}. </description>
+</property>
+<property>
+    <name>hive.hwi.listen.host</name>
+    <value>0.0.0.0</value>
+    <description>This is the host address the Hive Web Interface will listen on</description>
+</property>
+<property>
+    <name>hive.hwi.listen.port</name>
+    <value>9999</value>
+    <description>This is the port the Hive Web Interface will listen on</description>
+</property>
+
+<!-- hiveserver2 -->
+
+<property>
+    <name>hive.server2.webui.host</name>
+    <value>192.168.80.188</value>
+</property>
+<property>
+    <name>hive.server2.webui.port</name>
+    <value>10002</value>
+</property>
+
+<property>
+    <name>hive.server2.support.dynamic.service.discovery</name>
+    <value>true</value>
+</property>
+<property>
+    <name>hive.server2.zookeeper.namespace</name>
+    <value>hiveserver2</value>
+</property>
+
+<property>
+<name>hive.zookeeper.quorum</name>
+<value>node01:2181,node02:2181,node03:2181,node04:2181</value>
+</property>
+<property>
+<name>hive.zookeeper.client.port</name>
+<value>2181</value>
+</property>
+<property>
+<name>hive.server2.thrift.bind.host</name>
+<value>192.168.80.188</value>
+</property>
+<property>
+<name>hive.server2.thrift.port</name>
+<value>10001</value>
+</property>
+
+</configuration>

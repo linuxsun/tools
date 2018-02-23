@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema sccTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://org.opencloudb/">
+
+<schema name="uamdb">
+	
+  <table name="t_test_orgvilege" dataNode="dn901" />
+  <table name="t_test_orgvilege_batch" dataNode="dn901" />
+  <table name="t_test_orgvilege_batch_time" dataNode="dn901" />
+  <table name="t_test_orgvilege_code" dataNode="dn901" />
+  <table name="t_test_orgvilege_config" dataNode="dn901" />
+  <table name="t_test_orgvilege_daily_objective" dataNode="dn901" />
+  <table name="t_test_orgvilege_download_log" dataNode="dn901" />
+  <table name="t_test_orgvilege_import" dataNode="dn901" />
+  <table name="t_test_orgvilege_log" dataNode="dn901" />
+  <table name="t_test_orgvilege_relation" dataNode="dn901" />
+  <table name="t_test_orgvilege_request" dataNode="dn901" />
+  <table name="t_test_orgvilege_take_recode" dataNode="dn901" />
+
+  <table name="t_test_scc_sequences" dataNode="dn902" />
+	<table name="T_H_CODE" dataNode="dn902" />
+	<table name="T_test_ACCESS_TOKEN" dataNode="dn902" />
+	<table name="T_test_APP_KEY" dataNode="dn902" />
+	<table name="T_test_DELETE_ACCOUNT" dataNode="dn902" />
+	<table name="T_test_SMS_CONTROL" dataNode="dn902" />	
+	<table name="T_test_PRE_DELETE_ACCOUNT" dataNode="dn902" />
+	<table name="T_test_OUTER_ACCOUNT_TYPE" dataNode="dn902" />
+	<table name="T_test_acc_THIRD_BIND" dataNode="dn902" />
+	<table name="t_test_sms_setting" dataNode="dn902" />
+	<table name="T_test_scc_CONFIG" dataNode="dn902" />		
+	<table name="scc_id_card_code" dataNode="dn902" />		
+	<table name="scc_ip_area" dataNode="dn902" />		
+	<table name="scc_phone_area" dataNode="dn902" />		
+	<table name="t_test_notify_result" dataNode="dn902" />		
+	
+	<table name="t_act_code" dataNode="dn1002" />	
+	<table name="t_act_config" dataNode="dn1002" />	
+	<table name="t_act_history" dataNode="dn1002" />	
+	<table name="t_act_present_config" dataNode="dn1002" />	
+	
+	<table name="T_a_pwd_ACCOUNT_SUB" dataNode="dn1001" />
+	<table name="t_a_pwd_white" dataNode="dn1001" />
+	<table name="t_a_pwd_udb_fail" dataNode="dn1001" />
+	<table name="t_ppws_order_log" dataNode="dn1001" />
+	<table name="t_ppws_order_callback_log" dataNode="dn1001" />
+	<table name="t_ppws_packet" dataNode="dn1001" />
+	<table name="t_test_acc_appeal" dataNode="dn1001" />
+	<table name="t_test_number_port" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-number"/>
+
+	<table name="t_csms_np" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-number"/>
+	<table name="t_csb_imsi_mobile" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-IMSI"/>  	
+	<table name="t_csb_mobile_imsi" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-MOBILE_NO"/>  	
+	<table name="t_test_acc_setting" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>  	
+  <table name="T_a_HMM_CUSTOMER" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-customerid"/>
+  <table name="T_a_pwd_ACCOUNT" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-pwdname"/>
+	<table name="t_jd_account_pwd" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-pwd-account"/>
+	<table name="t_jd_account_pwd_tmp" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-pwd-account-crc32"/>
+  <table name="t_jd_account_mobile" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-mobile-account"/>
+
+	<table name="T_test_PASSWORD_PROTECT" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+	<table name="T_test_REG_INFO" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+	<table name="T_test_acc_ACCOUNT" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+	<table name="T_test_acc_AREA" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+	<table name="T_test_acc_BIND" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+	<table name="T_test_acc_BIND_INDEX" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accname"/>
+	<table name="T_test_acc_BIND_INDEX_BAK" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accname-bak"/>
+
+  <table name="T_test_acc_INFO" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>			  
+	<table name="T_test_acc_LOGIN_STAT" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+  <table name="T_test_LOGIN_LOG" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+  <table name="T_test_OPERATE_LOG" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-accid"/>
+
+  <table name="T_test_acc_YIXIN" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-yixin-name"/>
+  <table name="T_test_acc_GRADE" dataNode="dn101,dn102,dn103,dn104,dn201,dn202,dn203,dn204,dn301,dn302,dn303,dn304,dn401,dn402,dn403,dn404,dn501,dn502,dn503,dn504,dn601,dn602,dn603,dn604,dn701,dn702,dn703,dn704,dn801,dn802,dn803,dn804" rule="sharding-by-mobile"/>
+</schema>
+
+  <dataNode name="dn901" dataHost="dbhost01" database="apmdb"/>
+  <dataNode name="dn902" dataHost="dbhost01" database="uamdb101"/>
+  <dataNode name="dn1001" dataHost="dbhost02" database="uamdb201"/>
+  <dataNode name="dn1002" dataHost="dbhost02" database="actmdb"/>
+  
+  
+	<dataNode name="dn101" dataHost="dbhost1" database="uamdb101"/>
+	<dataNode name="dn102" dataHost="dbhost1" database="uamdb102"/>
+	<dataNode name="dn103" dataHost="dbhost1" database="uamdb103"/>
+	<dataNode name="dn104" dataHost="dbhost1" database="uamdb104"/>
+	                                        
+	<dataNode name="dn201" dataHost="dbhost2" database="uamdb201"/>
+	<dataNode name="dn202" dataHost="dbhost2" database="uamdb202"/>
+	<dataNode name="dn203" dataHost="dbhost2" database="uamdb203"/>
+	<dataNode name="dn204" dataHost="dbhost2" database="uamdb204"/>
+	                                         
+	<dataNode name="dn301" dataHost="dbhost3" database="uamdb301"/>
+	<dataNode name="dn302" dataHost="dbhost3" database="uamdb302"/>
+	<dataNode name="dn303" dataHost="dbhost3" database="uamdb303"/>
+	<dataNode name="dn304" dataHost="dbhost3" database="uamdb304"/>
+	                                      
+	<dataNode name="dn401" dataHost="dbhost4" database="uamdb401"/>
+	<dataNode name="dn402" dataHost="dbhost4" database="uamdb402"/>
+	<dataNode name="dn403" dataHost="dbhost4" database="uamdb403"/>
+	<dataNode name="dn404" dataHost="dbhost4" database="uamdb404"/>
+	                                             
+	<dataNode name="dn501" dataHost="dbhost5" database="uamdb501"/>
+	<dataNode name="dn502" dataHost="dbhost5" database="uamdb502"/>
+	<dataNode name="dn503" dataHost="dbhost5" database="uamdb503"/>
+	<dataNode name="dn504" dataHost="dbhost5" database="uamdb504"/>
+	                                           
+  <dataNode name="dn601" dataHost="dbhost6" database="uamdb601"/>
+	<dataNode name="dn602" dataHost="dbhost6" database="uamdb602"/>
+	<dataNode name="dn603" dataHost="dbhost6" database="uamdb603"/>
+	<dataNode name="dn604" dataHost="dbhost6" database="uamdb604"/>
+	                                             
+  <dataNode name="dn701" dataHost="dbhost7" database="uamdb701"/>
+	<dataNode name="dn702" dataHost="dbhost7" database="uamdb702"/>
+	<dataNode name="dn703" dataHost="dbhost7" database="uamdb703"/>
+	<dataNode name="dn704" dataHost="dbhost7" database="uamdb704"/>
+                                     
+  <dataNode name="dn801" dataHost="dbhost8" database="uamdb801"/>
+	<dataNode name="dn802" dataHost="dbhost8" database="uamdb802"/>
+	<dataNode name="dn803" dataHost="dbhost8" database="uamdb803"/>
+	<dataNode name="dn804" dataHost="dbhost8" database="uamdb804"/>
+	
+	<dataHost name="dbhost01" maxCon="300" minCon="50" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM01" url="172.16.150.221:3309" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	  <dataHost name="dbhost02" maxCon="300" minCon="50" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM02" url="172.16.150.221:3310" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>	
+	
+  <dataHost name="dbhost1" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM1" url="172.16.150.118:3301" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost2" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM2" url="172.16.150.118:3302" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost3" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM3" url="172.16.150.76:3303" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost4" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM4" url="172.16.150.76:3304" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost5" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM5" url="172.16.150.207:3305" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost6" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM6" url="172.16.150.207:3306" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost7" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<writeHost host="hostM7" url="172.16.150.209:3307" acc="***"
+			password="***">
+		</writeHost>
+	</dataHost>
+	<dataHost name="dbhost8" maxCon="20" minCon="10" balance="0"
+		dbType="mysql" dbDriver="native">
+		<heartbeat>select acc()</heartbeat>
+		<!-- can have multi write hosts -->
+		<writeHost host="hostM8" url="172.16.150.209:3308" acc="***"
+			password="***">
+			<!-- can have multi read hosts -->
+			<!-- <readHost host="hostS1" url="localhost:3307" acc="root" password="123456" 
+				/> -->
+		</writeHost>
+	</dataHost>
+</mycat:schema>

@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+  
+<!-- mycat schema  table -->
+<schema name="dt_payment" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn001" >
+</schema>
+
+<schema name="flowengine" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn002" >
+</schema>
+
+<schema name="dt_carproduct" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn003" >
+</schema>
+
+<schema name="dt_hotel" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn004" >
+</schema>
+
+<schema name="dt_carorderinfo" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn005" >
+</schema>
+
+<schema name="dt_orderprocess" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn006" >
+</schema>
+
+<schema name="dt_infoservice" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn007" >
+</schema>
+
+<schema name="dt_itmanage" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn008" >
+</schema>
+
+<schema name="dt_srm" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn009" >
+</schema>
+
+<schema name="dt_ticketeterm" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn010" >
+</schema>
+
+<schema name="dt_tmcjurisdiction" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn011" >
+</schema>
+
+<schema name="dt_platform" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn012" >
+</schema>
+
+<schema name="dt_interticketproduct" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn013" >
+</schema>
+
+<schema name="dt_trainproduct" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn014" >
+</schema>
+<schema name="dt_crmjurisdiction" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn015">
+</schema>
+<schema name="dt_travel" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn016">
+</schema>
+<schema name="dt_charging" checkSQLschema="false" sqlMaxLimit="100" dataNode="dn017" >
+</schema>
+
+<!-- dataNode realHosts realDataBases   -->
+  <dataNode name="dn001" dataHost="dataHost01" database="dt_payment" />
+  <dataNode name="dn002" dataHost="dataHost01" database="flowengine" />
+  <dataNode name="dn003" dataHost="dataHost01" database="dt_carproduct" />
+  <dataNode name="dn004" dataHost="dataHost01" database="dt_hotel" />
+  <dataNode name="dn005" dataHost="dataHost01" database="dt_carorderinfo" />
+  <dataNode name="dn006" dataHost="dataHost01" database="dt_orderprocess" />
+  <dataNode name="dn007" dataHost="dataHost01" database="dt_infoservice" />
+  <dataNode name="dn008" dataHost="dataHost01" database="dt_itmanage" />
+  <dataNode name="dn009" dataHost="dataHost01" database="dt_srm" />
+  <dataNode name="dn010" dataHost="dataHost01" database="dt_ticketeterm" />
+  <dataNode name="dn011" dataHost="dataHost01" database="dt_tmcjurisdiction" />
+  <dataNode name="dn012" dataHost="dataHost01" database="dt_platform" />
+  <dataNode name="dn013" dataHost="dataHost01" database="dt_interticketproduct" />
+  <dataNode name="dn014" dataHost="dataHost01" database="dt_trainproduct" />
+  <dataNode name="dn015" dataHost="dataHost01" database="dt_crmjurisdiction" />
+  <dataNode name="dn016" dataHost="dataHost01" database="dt_travel" />
+  <dataNode name="dn017" dataHost="dataHost01" database="dt_charging" />
+
+<!--  dataHost mysqlDB username and password   -->
+<dataHost name="dataHost01" maxCon="2000" minCon="50" balance="1"
+        writeType="0" dbType="mysql" dbDriver="native" switchType="2"  slaveThreshold="100">
+        <!-- <heartbeat>show slave status</heartbeat> -->
+        <heartbeat>select user()</heartbeat>
+        <!-- can have multi write hosts -->
+        <writeHost host="192.168.80.169" url="192.168.80.169:3309" user="username" password="pass">
+          <!-- can have multi read hosts -->
+          <readHost host="192.168.80.168" url="192.168.80.168:3309" user="username" password="pass" />
+        </writeHost>
+        <!-- <writeHost host="mysql-master-backup" url="192.168.80.168:3309" user="username" password="pass" /> -->
+</dataHost>
+</mycat:schema>  
