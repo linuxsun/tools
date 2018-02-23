@@ -1,8 +1,6 @@
 
 ### 环境描述
 
-mysql及zookeeper后来做了调整，不再使用本机的，但不影响部署流程说明。
-
 ```
 | 节点名称 | 服务器IP 
 | node01 | 192.168.80.188 |
@@ -22,35 +20,37 @@ mysql及zookeeper后来做了调整，不再使用本机的，但不影响部署
 
 ### 部署方法
 
-可以参考这些文章，但不可完全照搬步骤。
+可以参考[hadoop部署方法](http://blog.csdn.net/clark_xu/article/details/69668618) 但不可完全照搬步骤。
+
 特别是配置文件，需要根据实际情况改动。
 
-[hadoop部署方法](http://blog.csdn.net/clark_xu/article/details/69668618)
 
 
 ### 程序启动顺序
 
-在node01执行：
-启动 /app/run.sh start
-停止 /app/run.sh stop
-
-启动脚本与停止脚本一般放在同一层目录。
 ```
-node01
+1. node01
 /app/hadoop-2.7.1/sbin/mr-jobhistory-daemon.sh start historyserver
 /app/hadoop-2.7.1/sbin/start-dfs.sh
 /app/hadoop-2.7.1/sbin/start-yarn.sh
 
-node01 to node04
+2. node01 to node04
 /app/zookeeper-3.4.6/bin/zkServer.sh start
 
-node01
+3. node01
 /app/hbase-1.3.1/bin/start-hbase.sh
 
-node01
+4. node01
 nohup hive --service hwi &
 cd /app/apache-hive-2.1.1-bin ; nohup bin/hive --service hiveserver2 &
 ```
+
+已将启动顺序整合到node01/app/run.sh脚本,可将此脚本存放在node01节点/app/run.sh 执行：
+
+启动 /app/run.sh start
+
+停止 /app/run.sh stop
+
 
 ### 访问地址
 ```
