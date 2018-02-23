@@ -25,7 +25,7 @@ mysql及zookeeper后来做了调整，不再使用本机的，但不影响部署
 可以参考这些文章，但不可完全照搬步骤。
 特别是配置文件，需要根据实际情况改动。
 
-![hadoop部署方法](http://blog.csdn.net/clark_xu/article/details/69668618)
+[hadoop部署方法](http://blog.csdn.net/clark_xu/article/details/69668618)
 
 
 ### 程序启动顺序
@@ -82,9 +82,9 @@ jps
 
 ### hive客户端工具安装及使用
 
-![sqldeveloper-4.1.5.21.78-x64.zip 下载地址](http://192.168.30.247/s/sqldeveloper-4.1.5.21.78-x64.zip)
+[sqldeveloper-4.1.5.21.78-x64.zip 下载地址](http://192.168.30.247/s/sqldeveloper-4.1.5.21.78-x64.zip)
 
-![hive_jdbc插件 载地址](http://192.168.30.247/h/hive_jdbc_2.5.15.1040.zip)
+[hive_jdbc插件 载地址](http://192.168.30.247/h/hive_jdbc_2.5.15.1040.zip)
 
 
 打开sqldeveloper.exe，点击”工具”–>“首选项”,在”数据库”–>”第三方JDBC驱动”中，添加Hive JDBC驱动：
