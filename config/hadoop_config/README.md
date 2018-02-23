@@ -103,8 +103,5 @@ jps
 
 1. https://wiki.apache.org/hadoop/QuickStart
 2. http://blog.csdn.net/clark_xu/article/details/69668618
-
-
-
-
+3. https://blogs.oracle.com/datawarehousing/oracle-sql-developer-data-modeler-support-for-oracle-big-data-sql
 
