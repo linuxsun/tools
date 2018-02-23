@@ -82,20 +82,20 @@ jps
 
 ### hive客户端工具安装及使用
 
-[sqldeveloper-4.1.5.21.78-x64.zip 下载地址](http://192.168.30.247/s/sqldeveloper-4.1.5.21.78-x64.zip)
+[sqldeveloper-4.1.5.21.78-x64.zip 下载地址](http://www.oracle.com/technetwork/developer-tools/sql-developer/downloads/sqldev-downloads-415-3662249.html)
 
-[hive_jdbc插件 载地址](http://192.168.30.247/h/hive_jdbc_2.5.15.1040.zip)
+[hive_jdbc插件 载地址](https://www.cloudera.com/downloads/connectors/hive/jdbc/2-5-15.html)
 
 
 打开sqldeveloper.exe，点击”工具”–>“首选项”,在”数据库”–>”第三方JDBC驱动”中，添加Hive JDBC驱动：
 
-images{F214}
+![images](https://github.com/linuxsun/tools/blob/master/config/hadoop_config/image-sqldeveloper.png)
 
 添加后重启sqldeveloper。
 
 再次打开sqldeveloper，点击”新建连接”，选择”Hive”数据库：
 
-images{F212}
+![images2](https://github.com/linuxsun/tools/blob/master/config/hadoop_config/image-sqldeveloper-hive.png)
 
 
 
