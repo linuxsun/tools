@@ -1,0 +1,62 @@
+---
+- hosts: cloudmonitor
+  vars:
+    REGION_ID: "{{ REGION_ID_JK | default('cn-hangzhou') }}"
+    VERSION: "{{ VERSION_JK | default('1.3.2') }}"
+    download_url: "{{ download_url_jk | default('https://cms-agent-cn-hangzhou.oss-cn-hangzhou-internal.aliyuncs.com/release/cms_install_for_linux.sh')}}"
+
+  tasks:
+  - name: check cloudmonitor
+    shell: test -f /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh && echo OnLine || echo OffLine
+    register: cloudmonitor
+
+  - name: install cloudmonitor
+    shell: REGION_ID="{{ REGION_ID }}" VERSION="{{ VERSION }}" bash -c "$(curl {{ download_url }})" >/dev/null 2&>1
+    when: ("OffLine" in cloudmonitor.stdout) and (ansible_distribution == "CentOS")
+    ignore_errors: yes
+
+  - name: check cloudmonitor
+    shell: test -f /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh && echo OnLine || echo OffLine
+    register: cloudmonitor
+
+  - name: restart cloudmonitor
+    shell: service cloudmonitor restart
+    when: ("OnLine" in cloudmonitor.stdout) and (ansible_distribution == "CentOS" and ansible_distribution_major_version == "6")
+
+  - name: enable clouddmonitor
+    shell: chkconfig --level 2345  cloudmonitor on
+    when: ("OnLine" in cloudmonitor.stdout) and (ansible_distribution == "CentOS" and ansible_distribution_major_version == "6")
+
+  - name: chkconfig --list cloudmonitor
+    shell: chkconfig --list cloudmonitor
+    when: ("OnLine" in cloudmonitor.stdout) and (ansible_distribution == "CentOS" and ansible_distribution_major_version == "6")
+
+  #- name: systemctl restart cloudmonitor.service
+  #  systemd:
+  #    state: restarted
+  #    daemon_reload: yes
+  #    name: cloudmonitor
+  #  ignore_errors: yes
+  - name: systemctl restart cloudmonitor.service
+    shell: /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh restart
+    when: (ansible_distribution == "CentOS") and (ansible_distribution_major_version == "7")
+  
+  - name: systemctl enable systemctl
+    systemd:
+      name: cloudmonitor
+      enabled: yes
+      masked: no
+    ignore_errors: yes
+    when: (ansible_distribution == "CentOS") and (ansible_distribution_major_version == "7")
+
+  - name: cloudmonitor.sh status
+    shell: /usr/local/cloudmonitor/wrapper/bin/cloudmonitor.sh status
+    igonre_errors: yes
+    register: cloudmonintor_status
+    when: ("OnLine" in cloudmonitor.stdout) and (ansible_distribution == "CentOS")
+    
+  - debug:
+    var: result
+
+# https://help.aliyun.com/knowledge_detail/38859.html?spm=5176.11065259.1996646101.searchclickresult.32017222v9fQxW
+#
