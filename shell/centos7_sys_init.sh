@@ -69,27 +69,24 @@ fi
 }
  
 sshd_config(){
-
-SSHD_CONFIG="/etc/ssh/sshd_config"
-sed -i 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' $SSHD_CONFIG
-sed -i 's/#UseDNS yes/UseDNS no/' $SSHD_CONFIG
-#sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
-sed -i 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g' $SSHD_CONFIG
-sed -i "s|#Port\ 22|Port\ $SSH_PORT|g" $SSHD_CONFIG
-sed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG
-sed -i 's|ChallengeResponseAuthentication\ yes|ChallengeResponseAuthentication\ no|g' $SSHD_CONFIG
-sed -i 's|\#RSAAuthentication\ yes|RSAAuthentication\ yes|g' $SSHD_CONFIG
-sed -i 's|\#PubkeyAuthentication\ yes|PubkeyAuthentication\ yes|g' $SSHD_CONFIG
-systemctl start crond
-
-SSH_CONFIG="/etc/ssh/ssh_config"
-unset ret
-grep 'StrictHostKeyChecking no' $SSH_CONFIG ; ret=$?
-if [ $ret -eq 1 ]; then
-    echo 'StrictHostKeyChecking no' >> $SSH_CONFIG
-    echo 'UserKnownHostsFile /dev/null' >> $SSH_CONFIG
-fi
-
+    SSHD_CONFIG="/etc/ssh/sshd_config"
+    sed -i -e 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' \
+        -e 's/#UseDNS yes/UseDNS no/'\
+        -e 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g'\
+        -e "s|#Port\ 22|Port\ $SSH_PORT|g"\
+        -e 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g'\
+        -e 's|ChallengeResponseAuthentication\ yes|ChallengeResponseAuthentication\ no|g'\
+        -e 's|\#RSAAuthentication\ yes|RSAAuthentication\ yes|g'\
+        -e 's|\#PubkeyAuthentication\ yes|PubkeyAuthentication\ yes|g' $SSHD_CONFIG
+        #sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
+    systemctl start crond
+    SSH_CONFIG="/etc/ssh/ssh_config"
+    unset ret
+    grep 'StrictHostKeyChecking no' $SSH_CONFIG ; ret=$?
+    if [ $ret -eq 1 ]; then
+        echo 'StrictHostKeyChecking no' >> $SSH_CONFIG
+        echo 'UserKnownHostsFile /dev/null' >> $SSH_CONFIG
+    fi
 }
   
 sysctl_config(){
