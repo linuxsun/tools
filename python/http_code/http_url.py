@@ -32,7 +32,7 @@ if __name__ == '__main__':
     HELP: 
 
     滑动HH的值,可调整监控频率.
-    每间隔 1\2\6\60 秒钟,运行一次http状态码扫描. 
+    每间隔 1,2,6,60 秒钟,运行一次http状态码扫描. 
     HH=60;MM=60;SS=(HH/MM);sleep_time=SS;sleep_time 
     HH=120;MM=60;SS=(HH/MM);sleep_time=SS;sleep_time
     HH=360;MM=60;SS=(HH/MM);sleep_time=SS;sleep_time
