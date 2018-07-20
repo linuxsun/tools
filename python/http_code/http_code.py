@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_ 
+import os
+import re
+import sys
+import time
 import StringIO
 import pycurl
-import time
-#import sys
-#import os
-#import re
 #import smtplib
 #from email import encoders
 #from email.header import Header
@@ -46,38 +46,45 @@ class urlpass:
         self.contents = self.contents + buf
 
 def urlgzip(input_url):
-    t = urlpass()
-    c = pycurl.Curl()
-    c.setopt(pycurl.WRITEFUNCTION,t.body_callback)
-    c.setopt(pycurl.ENCODING, 'gzip')
-    c.setopt(pycurl.URL,input_url)
-    c.perform()
-    http_code = c.getinfo(pycurl.HTTP_CODE)
-    http_conn_time = c.getinfo(pycurl.CONNECT_TIME)
-    http_pre_tran = c.getinfo(pycurl.PRETRANSFER_TIME)
-    http_start_tran = c.getinfo(pycurl.STARTTRANSFER_TIME)
-    http_total_time = c.getinfo(pycurl.TOTAL_TIME)
-    http_size = c.getinfo(pycurl.SIZE_DOWNLOAD)
-    return "http_code:%d,http_size:%d,conn_time:%.1f,\
+    try:
+        t = urlpass()
+        c = pycurl.Curl()
+        c.setopt(pycurl.WRITEFUNCTION,t.body_callback)
+        c.setopt(pycurl.ENCODING, 'gzip')
+        c.setopt(pycurl.URL,input_url)
+        c.perform()
+        http_code = c.getinfo(pycurl.HTTP_CODE)
+        http_conn_time = c.getinfo(pycurl.CONNECT_TIME)
+        http_pre_tran = c.getinfo(pycurl.PRETRANSFER_TIME)
+        http_start_tran = c.getinfo(pycurl.STARTTRANSFER_TIME)
+        http_total_time = c.getinfo(pycurl.TOTAL_TIME)
+        http_size = c.getinfo(pycurl.SIZE_DOWNLOAD)
+        return "http_code:%d,http_size:%d,conn_time:%.1f,\
 pre_tran:%.1f,start_tran:%.1f,total_time:%.1f" % \
 (http_code,http_size,http_conn_time,http_pre_tran, \
 http_start_tran,http_total_time)
+    except:
+        print('URL Error: %s') % input_url
+        #sys.exit(1)
 
 def DingDing(ddmesg):
     xianding=DingtalkChatbot(url.rob_url)
     xianding.send_text(msg=ddmesg, is_at_all=False)
 
 def warning_rule(args):
-    urlinfo=urlgzip(args)
-    total_time=int(float(urlinfo.split(',')[-1].\
+    try:
+        urlinfo=urlgzip(args)
+        total_time=int(float(urlinfo.split(',')[-1].\
 split(':')[-1]))
-    http_Code=int(urlinfo.split(',')[0].split(':')[1])
-    Message=("url:%s\nhttp_code:%s\ntotal_time:%.1f\n") % \
-(args,http_Code,total_time) 
-    #print(Message)
-    if total_time >= 10 or http_Code >= 400:
-        #mail(Message)
-        DingDing(Message)
+        http_Code=int(urlinfo.split(',')[0].split(':')[1])
+        Message=("url:%s\nhttp_code:%s\ntotal_time:%.1f\n")\
+%(args,http_Code,total_time) 
+        #print(Message)
+        if total_time >= 10 or http_Code >= 400:
+            #mail(Message)
+            DingDing(Message)
+    except:
+        print('URL Error: %s') % args
 
 if __name__ == '__main__':
     while True:
@@ -94,4 +101,5 @@ if __name__ == '__main__':
             warning_rule(lineM)
             continue
         time.sleep(url.sleep_time)
+
 

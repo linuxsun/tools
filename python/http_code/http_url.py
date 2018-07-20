@@ -2,7 +2,6 @@
 # _*_ coding:utf-8 _*_
 
 class Http_url(object):
-
     '''
     滑动HH的值,可调整监控频率.
     每间隔 1,2,6,60 秒钟,运行一次http状态码扫描. 
@@ -37,7 +36,7 @@ class Http_url(object):
 
     middle=[
     'http://url.ip:8060/test.html',
-    'http://100.114.151.156:9000/test.html',
+    'http://url.ip:9000/test.html',
     
     ]
 
@@ -48,5 +47,5 @@ class Http_url(object):
     ]
 
 if __name__ == '__main__':
-    url=Http_url()
+    pass
 
