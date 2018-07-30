@@ -11,7 +11,7 @@ playbook 使用方法有两种方式：
 ansible-playbook saturn-executor.yaml \ 
 --extra-vars "EXECUTOR_VERSION='2.1.0.1' \
 WORK_DIR='/application/saturn' PROJEST_NAME=saturn-executor-X-Y-Z \
-VIP_SATURN_ZK_CONNECTION=10.24.35.221:2181 JMX_PORT=245123 \
+VIP_SATURN_ZK_CONNECTION=10.24.24.24:2181 JMX_PORT=245123 \
 ENVIRONMENT_MEM='-Xms1G -Xmx2G' NAMESPACE='sa.dev.io' \
 EXECUTOR=executor_009 ANSIBLE_HOST_LIST_FROM_JENKINS='host_addr'"
 ```
@@ -28,7 +28,8 @@ Jenkins是主、从模式，构建分两步：
 
 另外一步是deploy，会在jenkins从服务器上执行，这个步骤也需要和第一步提供相同的参数，可以参考config-deploy.xml文件。
 
-部署界面请参考： https://github.com/linuxsun/tools/blob/master/playbook/saturn/jenkins-saturn.png
+部署界面请参考： 
+# ![show](https://github.com/linuxsun/tools/blob/master/playbook/saturn/jenkins-saturn.png)
 
 
 ## 二、 自动部署Saturn-Console
@@ -43,7 +44,8 @@ playbook 使用方法有两种方式,原理与Saturn-executor类似。
 
 Jenkins自动构建步骤，可以参考: config-console-build.xml \ config-console-deploy.xml
 
-部署界面请参考 https://github.com/linuxsun/tools/blob/master/playbook/saturn/saturn-console-build.png
+部署界面请参考:
+[show](https://github.com/linuxsun/tools/blob/master/playbook/saturn/saturn-console-build.png)
 
 ### 
 
