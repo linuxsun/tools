@@ -3,7 +3,8 @@ JAVA="java"
 #RunUser=`id -u -n`
 AppsName="$1"
 ShowVars="$2"
-RunInfo=""
+RunInfo=(0 0 0 0 0 0 0 0 0 0 0)
+ppid='NULL'
 
 ShowHelp() {
   HelpInfo="$0 AppsName [pid|cpu|mem|rss]"
@@ -25,22 +26,12 @@ ShowRunInfoVars () {
   RSSS=${RunInfo[3]}
 }
 
-ShowInfo () {
-  ShowPid
-  #echo $ppid
-  if [ "$ppid" = 'NULL' ];then
-    ShowRunInfoVars
-  else
-    ShowRunInfoVars
-  fi
-}
-
 if [ $# -ne 2 ];then
   ShowHelp
   exit 1
 else
-  ShowInfo
-  #echo $RunInfo
+  ShowPid
+  ShowRunInfoVars
   if [ "$2" = "pid" ];then
     echo $PIDD
   elif [ "$2" = "cpu" ];then
