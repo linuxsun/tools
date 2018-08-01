@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 JAVA="java"
-RunUser="root"
+RunUser=`id -u -n`
 ProjName="$1"
 ShowVars="$2"
-RunInfoInit="0 0 0 0 0 0 0 0 0 0 0"
+RunInfo=""
 
 ShowHelp() {
   HelpInfo="$0 ProjectName [pid|cpu|mem|rss]"
@@ -11,34 +11,26 @@ ShowHelp() {
 }
 
 ShowPid () {
-  unset ppid
-  ppid=`ps -ax|grep $JAVA|grep "$ProjName"|grep -v \
-grep|awk '{print $1}'`
-  ppid=${ppid:-"null"}
-  #ppid=`echo ${ppid%\ *}`
-  ppid=`echo $ppid |awk '{print $1}'`
+  RunInfo=(`ps -aux|grep $JAVA|grep "$ProjName"|grep -v \
+grep|sed -n '1p'|awk '{print $2,$3,$4,$6}'`)
+  [ -z "$RunInfo" ] && ppid='NULL' || ppid=${RunInfo[0]} 
+  [ -z "$RunInfo" ] && RunInfo=(0 0 0 0 0 0 0 0 0 0 0)
 }
 
 ShowRunInfoVars () {
-  for vars in PIDD CPUU MEMM RSSS; do unset $vars;\
-done ; unset vars
-  #PIDD=`echo ${RunInfo%$RunUser*}`
-  PIDD=`echo $RunInfo|awk '{print $1}'`
-  CPUU=`echo $RunInfo|awk '{print $2}'`
-  MEMM=`echo $RunInfo|awk '{print $3}'`
-  RSSS=`echo $RunInfo|awk '{print $4}'`
+  #for vars in PIDD CPUU MEMM RSSS; do unset $vars; done ; unset vars
+  PIDD=${RunInfo[0]}
+  CPUU=${RunInfo[1]}
+  MEMM=${RunInfo[2]}
+  RSSS=${RunInfo[3]}
 }
 
 ShowInfo () {
-  unset RunInfo
   ShowPid
   #echo $ppid
-  if [ "$ppid" = 'null' ];then
-    RunInfo="$RunInfoInit"
+  if [ "$ppid" = 'NULL' ];then
     ShowRunInfoVars
   else
-    RunInfo=`ps -aux|grep $JAVA|grep "$ProjName"|grep -v \
-grep|sed -n '1p'|awk '{print $2,$3,$4,$6}'`
     ShowRunInfoVars
   fi
 }
