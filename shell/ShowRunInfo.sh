@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-JAVA="java"
+AppsType="java"
 #RunUser=`id -u -n`
 AppsName="$1"
-ShowVars="$2"
+#ShowVars="$2"
 RunInfo=(0 0 0 0 0 0 0 0 0 0 0)
 ppid='NULL'
 
@@ -12,7 +12,7 @@ ShowHelp() {
 }
 
 ShowPid () {
-  RunInfo=(`ps -aux|grep $JAVA|grep "$AppsName"|grep -v \
+  RunInfo=(`ps -aux|grep $AppsType|grep "$AppsName"|grep -v \
 grep|sed -n '1p'|awk '{print $2,$3,$4,$6}'`)
   [ -z "$RunInfo" ] && ppid='NULL' || ppid=${RunInfo[0]} 
   [ -z "$RunInfo" ] && RunInfo=(0 0 0 0 0 0 0 0 0 0 0)
@@ -47,7 +47,7 @@ else
 fi
 
 for vars in RunInfo PIDD CPUU MEMM RSSS \
-JAVA RunUser AppsName ShowVars RunInfoInit ppid
+AppsType RunUser AppsName ShowVars RunInfoInit ppid
 do
   unset $vars
 done
