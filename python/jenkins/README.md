@@ -60,8 +60,10 @@ C:\Python27\python.exe jenkins\jenkins_update_jobs_config_xml.py %config_xml_roo
     
 ```
 
-## 2. jenkins_dingding.py 脚本使用方法
-    编辑你的jobs
+## jenkins_dingding.py 脚本使用方法
+
+
+### 2. 编辑你的jobs
 
 ```
 构建后操作--> Post build task --> Log text: .* --> Operation: --AND-- --> Script: D:\Python27\python.exe D:\Python27\jenkins_dingding.py %JOB_BASE_NAME%
