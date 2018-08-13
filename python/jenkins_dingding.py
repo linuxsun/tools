@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-#_*_ coding:utf-8 _*_
+# -*- coding: utf-8 -*-
 import sys
 import time
 from jenkinsapi.jenkins import Jenkins
 from dingtalkchatbot.chatbot import DingtalkChatbot
 
-jobs_name=sys.argv[1]
+jobs_name=sys.argv[1].decode('gbk').encode('utf-8')
 jenkins_user='admin'
 jenkins_password='admin'
 jenkins_url='http://localhost:8080/'
@@ -28,7 +28,7 @@ def send_messages(message):
 
 if __name__ == '__main__':
     messages=JenkinsApi(jobs_name,jenkins_user,jenkins_password,jenkins_url)
-    print messages
+    print(messages)
     send_messages(messages)
 
 """
