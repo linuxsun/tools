@@ -89,18 +89,18 @@ ${String[3]}|g" $Files
 }
 
 Help() {
-Usage="""Backup \${JENKINS_HOME}/jobs/tasks/config.xml:
-"$0" -b /opt/.jenkins/jobs
+Usage="""\033[33mBackup \${JENKINS_HOME}/jobs/tasks/config.xml\033[0m 
+\033[36m"$0" -b /opt/.jenkins/jobs\033[0m
 
-Add string to \${JENKINS_HOME}/jobs/tasks/config.xml: 
-"$0" -a /opt/.jenkins/jobs
+\033[33mAdd string to \${JENKINS_HOME}/jobs/tasks/config.xml\033[0m
+\033[36m"$0" -a /opt/.jenkins/jobs\033[0m
 
-Edit \${JENKINS_HOME}/jobs/tasks/config.xml
-"$0" -e \${JENKINS_HOME}/jobs '-1 10 -1 10'
+\033[33mEdit \${JENKINS_HOME}/jobs/tasks/config.xml\033[0m
+\033[36m"$0" -e \${JENKINS_HOME}/jobs '-1 10 -1 10'\033[0m
 
-Clear config.xml.list:
-"$0" -c """
-echo "$Usage"
+\033[33mClear config.xml.list\033[0m
+\033[36m"$0" -c \033[0m """
+echo -e "$Usage"
 }
 
 case $1 in
