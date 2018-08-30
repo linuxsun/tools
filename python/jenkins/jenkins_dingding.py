@@ -19,7 +19,7 @@ def JenkinsApi(jobs_name,jenkins_user,jenkins_password,jenkins_url):
     #if not running:
     latestBuild=job_instance.get_last_build()
     return 'jobs_name:%s,\nstatus:%s,\ntime:%s\n' % \
-(jobs_name,latestBuild.get_status(),time.strftime('%Y-%m-%d:%H:%M:%S'))
+(latestBuild,latestBuild.get_status(),time.strftime('%Y-%m-%d:%H:%M:%S'))
 
 def send_messages(message):
     WebHook=webhook
