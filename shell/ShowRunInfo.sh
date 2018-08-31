@@ -66,7 +66,3 @@ unset vars
 #10 TIME
 #11 COMMAND
 
-#https://github.com/linuxsun/tools
-
-
-
