@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>DestHost</name>
+          <description>[ 1.2.3.4:/path/xyz/FilesName.log ]</description>
+          <defaultValue>0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.FileParameterDefinition>
+          <name>DownloadFile.gz</name>
+          <description></description>
+        </hudson.model.FileParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>java-build-node</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>YouJenkinsToKen</authToken>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>tee ${JOB_NAME}.sh &lt;&lt;-EOF
+#!/usr/bin/env bash
+
+RSYNC=$(which rsync)
+TmpDir=&quot;DownloadFiles&quot;
+#test -d \$TmpDir || mkdir -p \$TmpDir
+
+RunCmd() {
+    UserHost=&quot;sysadmin@${DestHost}&quot;
+    AllowPath=(&apos;^/home/sysadmin&apos; &apos;^/application/&apos; &apos;^/logs/&apos; &apos;^/data/&apos; &apos;^/tmp/&apos;)
+    #test -d ${WORKSPACE}/\${TmpDir}/ \
+    #&amp;&amp; \$RSYNC -avzP -e &apos;ssh -p 5522&apos; \$UserHost ${WORKSPACE}/\${TmpDir}/
+    ret=&quot;0&quot;
+    for vars in &quot;\${AllowPath[@]}&quot;
+    do
+        echo &quot;\${DestHost##*:}&quot; | grep &quot;\$vars&quot; &gt; /dev/null ; ret=&quot;\$?&quot;
+        echo &quot;\${DestHost##*:}&quot; | grep -o &apos;/home/sysadmin/.&apos; ; SkipHome=&quot;\$?&quot;
+        echo &quot;\${DestHost##*:}&quot; | grep -o &apos;/application/etc&apos; ; SkipEtc=&quot;\$?&quot;
+        echo &quot;\$vars&quot;
+        if [ &quot;\$ret&quot; -eq 0 ] &amp;&amp; [ \$SkipHome -eq 1 ] &amp;&amp; [ \$SkipEtc -eq 1 ] ; then
+            scp -r -P 5522 \$UserHost ${WORKSPACE}
+        else
+            echo &quot;Error&quot;
+        fi
+        continue
+    done
+}
+
+RunCmd
+
+for xyz in RSYNC TmpDir UserHost DestHost RunCmd vars ret SkipHome SkipEtc
+do
+    unset \$xyz ; unset xyz
+done
+
+EOF
+
+</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>#!/usr/bin/env bash
+
+echo ${DestHost}
+chmod u+x  ${JOB_NAME}.sh
+sh -x  ${JOB_NAME}.sh
+test -f ${JOB_NAME}.sh &amp;&amp; rm ${JOB_NAME}.sh
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
