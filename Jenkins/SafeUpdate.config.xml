@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>6</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>6</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>UpdatePackageName</name>
+          <description>just one: dnsmasq
+package list: dnsmasq,nginx,......</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>CmdHosts</name>
+          <description>just one: 1.2.3.4
+host list: 1.2.3.4,192.168.2.2,172.16.3.4,......</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ssh_port</name>
+          <description></description>
+          <defaultValue>2233</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>State</name>
+          <description>present、installed、latest  #安装。
+                                           #latest 将更新指定的包，如果它不是最新的可用版本。
+                                           #present，installed将简单地确保安装所需的程序包。
+
+absent、removed              #移除。
+                                           #absent，removed将删除指定的包。
+</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>latest</string>
+              <string>installed</string>
+              <string>present</string>
+              <string>absent</string>
+              <string>removed</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>jenkins-build-node</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>test -f ${JOB_NAME}.hosts &amp;&amp; cat /dev/null &gt; ${JOB_NAME}.hosts
+tee -a ${JOB_NAME}.hosts &lt;&lt;- &apos;EOF&apos;
+[CmdHostsGroup]
+EOF
+
+echo $CmdHosts|grep -o &apos;,&apos; &gt;/dev/null; ret=$?
+if [ $ret -ge 1 ]; then
+    exit 1
+else
+    CmdHosts=(`echo $CmdHosts|sed &apos;s|,| |g&apos;`)
+    for vars in ${CmdHosts[@]}
+    do
+echo $vars
+tee -a ${JOB_NAME}.hosts &lt;&lt;- EOF
+$vars ansible_sudo_pass=&apos;$PassWord&apos; ansible_ssh_port=$ssh_port
+EOF
+    done
+
+fi
+</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>
+tee ${JOB_NAME}.yaml &lt;&lt;- EOF
+---
+- hosts: CmdHostsGroup
+  remote_user: sysadmin
+
+  vars:
+    Keys: Values
+    list_of_packages: &quot;${UpdatePackageName}&quot;
+
+  tasks:
+  #- name: Set SSH port
+  #  set_fact:
+  #    ansible_port: &quot;${ssh_port}&quot;
+    
+  - name: some security upgrades
+    yum:
+      name: &quot;{{list_of_packages}}&quot;
+      state: ${State}
+      
+EOF
+
+
+########################################################
+#My inventory looks like this:
+
+#[webservers]
+#web01.somedomain.com ansible_port=1234
+#My playbook looks like this:
+#
+#- name: Determine SSH port
+#  hosts: all
+#  gather_facts: no
+#  remote_user: root
+#  tasks:
+#    - name: &quot;Check port {{ ansible_port }}&quot;
+#      wait_for:
+#        port: &quot;{{ ansible_port }}&quot;
+#        state: &quot;started&quot;
+#        host: &quot;{{ inventory_hostname }}&quot;
+#        connect_timeout: &quot;5&quot;
+#        timeout: &quot;5&quot;
+#      delegate_to: &quot;localhost&quot;
+#      ignore_errors: &quot;yes&quot;
+#      register: ssh_port
+#
+#    - name: &quot;Check port 22&quot;
+#      wait_for:
+#        port: &quot;22&quot;
+#        state: &quot;started&quot;
+#        host: &quot;{{ inventory_hostname }}&quot;
+#        connect_timeout: &quot;5&quot;
+#        timeout: &quot;5&quot;
+#      delegate_to: &quot;localhost&quot;
+#      ignore_errors: &quot;yes&quot;
+#      register: ssh_port_default
+#      when: 
+#        - ssh_port is defined 
+#        - ssh_port.state is undefined
+#
+#    - name: Set SSH port to 22
+#      set_fact:
+#        ansible_port: &quot;22&quot;
+#      when: ssh_port_default.state is defined
+#Finally, right after the SSH server is configured and the port has been changed I have this:
+#
+#- name: Set SSH port to 1234
+#  set_fact:
+#    ansible_port: &quot;1234&quot;
+#
+# 2018-10-09
+# https://stackoverflow.com/questions/34333058/ansible-change-ssh-port-in-playbook
+#</command>
+    </hudson.tasks.Shell>
+    <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@0.6.2">
+      <playbook>${JOB_NAME}.yaml</playbook>
+      <inventory class="org.jenkinsci.plugins.ansible.InventoryPath">
+        <path>${JOB_NAME}.hosts</path>
+      </inventory>
+      <limit></limit>
+      <tags></tags>
+      <skippedTags></skippedTags>
+      <startAtTask></startAtTask>
+      <credentialsId></credentialsId>
+      <sudo>true</sudo>
+      <sudoUser></sudoUser>
+      <forks>4</forks>
+      <unbufferedOutput>true</unbufferedOutput>
+      <colorizedOutput>false</colorizedOutput>
+      <hostKeyChecking>false</hostKeyChecking>
+      <additionalParameters>-vv</additionalParameters>
+      <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
+    </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
+    <hudson.tasks.Shell>
+      <command>unset UpdatePackageName CmdHosts PassWord ret vars ansible_sudo_pass UpdatePackageName State 
+test -f ${JOB_NAME}.hosts &amp;&amp; rm ${JOB_NAME}.hosts
+test -f ${JOB_NAME}.yaml &amp;&amp; rm ${JOB_NAME}.yaml
+#test -f ${JOB_NAME}.retry &amp;&amp; rm ${JOB_NAME}.retry</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <EnvInjectPasswordWrapper plugin="envinject@2.1.5">
+      <injectGlobalPasswords>false</injectGlobalPasswords>
+      <maskPasswordParameters>true</maskPasswordParameters>
+      <passwordEntries>
+        <EnvInjectPasswordEntry>
+          <name>PassWord</name>
+          <value>{gMdpv6Sy0eSAOIBJFPm7xCyNgwjq4G9v=}</value>
+        </EnvInjectPasswordEntry>
+      </passwordEntries>
+    </EnvInjectPasswordWrapper>
+  </buildWrappers>
+</project>
