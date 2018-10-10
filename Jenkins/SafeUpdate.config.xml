@@ -16,20 +16,17 @@
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>UpdatePackageName</name>
-          <description>just one: dnsmasq
-package list: dnsmasq,nginx,......</description>
+          <description>just one: dnsmasq,
+package list: dnsmasq,nginx,......
+,号结尾是必须的</description>
           <defaultValue></defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>CmdHosts</name>
-          <description>just one: 1.2.3.4
-host list: 1.2.3.4,192.168.2.2,172.16.3.4,......</description>
+          <description>just one: 1.2.3.4,
+host list: 1.2.3.4,192.168.2.2,172.16.3.4,......
+,号结尾是必须的</description>
           <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>ssh_port</name>
-          <description></description>
-          <defaultValue>2233</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
           <name>State</name>
@@ -63,16 +60,45 @@ absent、removed              #移除。
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>test -f ${JOB_NAME}.hosts &amp;&amp; cat /dev/null &gt; ${JOB_NAME}.hosts
+      <command>
+SkipList=(&apos;kernel&apos; &apos;openssh&apos; &apos;network&apos; &apos;lvm2&apos;)
+UpdatePackageName=&quot;${UpdatePackageName}&quot;
+echo $UpdatePackageName | grep -o &apos;,&apos; &gt;/dev/null; ret=$?
+
+if [ $ret -gt 1 ]; then
+    echo &apos;,号结尾是必须的&apos;
+    exit 1
+else
+    UpdatePackageNameOld=&quot;$UpdatePackageName&quot;
+    UpdatePackageName=`echo &quot;$UpdatePackageName&quot; | sed &apos;s|,|\||g&apos;`
+    UpdatePackageName=`echo ${UpdatePackageName%|}`
+    #echo &quot;$UpdatePackageName&quot;
+    for vars in ${SkipList[@]}
+    do
+        set +xe
+        echo $vars | grep -Eo &quot;($UpdatePackageName)&quot; &gt;/dev/null ; ret=$?
+        if [ $ret -eq 0 ]; then
+            #continue
+            echo &quot;cant removed|installd $vars&quot;
+            exit 1
+        fi
+    done
+    UpdatePackageName=&quot;`echo ${UpdatePackageNameOld%,}`&quot;
+fi
+
+
+test -f ${JOB_NAME}.hosts &amp;&amp; cat /dev/null &gt; ${JOB_NAME}.hosts
 tee -a ${JOB_NAME}.hosts &lt;&lt;- &apos;EOF&apos;
 [CmdHostsGroup]
 EOF
 
-echo $CmdHosts|grep -o &apos;,&apos; &gt;/dev/null; ret=$?
+set -xe
+echo $CmdHosts|grep -o &apos;,&apos; 2&gt;/dev/null; ret=$?
 if [ $ret -ge 1 ]; then
     exit 1
 else
     CmdHosts=(`echo $CmdHosts|sed &apos;s|,| |g&apos;`)
+    #CmdHosts=`echo ${CmdHosts%|}`
     for vars in ${CmdHosts[@]}
     do
 echo $vars
@@ -82,10 +108,8 @@ EOF
     done
 
 fi
-</command>
-    </hudson.tasks.Shell>
-    <hudson.tasks.Shell>
-      <command>
+
+
 tee ${JOB_NAME}.yaml &lt;&lt;- EOF
 ---
 - hosts: CmdHostsGroup
@@ -93,14 +117,14 @@ tee ${JOB_NAME}.yaml &lt;&lt;- EOF
 
   vars:
     Keys: Values
-    list_of_packages: &quot;${UpdatePackageName}&quot;
+    list_of_packages: &quot;$UpdatePackageName&quot;
 
   tasks:
   #- name: Set SSH port
   #  set_fact:
   #    ansible_port: &quot;${ssh_port}&quot;
     
-  - name: some security upgrades
+  - name: some security upgrades Or remove
     yum:
       name: &quot;{{list_of_packages}}&quot;
       state: ${State}
@@ -108,56 +132,7 @@ tee ${JOB_NAME}.yaml &lt;&lt;- EOF
 EOF
 
 
-########################################################
-#My inventory looks like this:
-
-#[webservers]
-#web01.somedomain.com ansible_port=1234
-#My playbook looks like this:
-#
-#- name: Determine SSH port
-#  hosts: all
-#  gather_facts: no
-#  remote_user: root
-#  tasks:
-#    - name: &quot;Check port {{ ansible_port }}&quot;
-#      wait_for:
-#        port: &quot;{{ ansible_port }}&quot;
-#        state: &quot;started&quot;
-#        host: &quot;{{ inventory_hostname }}&quot;
-#        connect_timeout: &quot;5&quot;
-#        timeout: &quot;5&quot;
-#      delegate_to: &quot;localhost&quot;
-#      ignore_errors: &quot;yes&quot;
-#      register: ssh_port
-#
-#    - name: &quot;Check port 22&quot;
-#      wait_for:
-#        port: &quot;22&quot;
-#        state: &quot;started&quot;
-#        host: &quot;{{ inventory_hostname }}&quot;
-#        connect_timeout: &quot;5&quot;
-#        timeout: &quot;5&quot;
-#      delegate_to: &quot;localhost&quot;
-#      ignore_errors: &quot;yes&quot;
-#      register: ssh_port_default
-#      when: 
-#        - ssh_port is defined 
-#        - ssh_port.state is undefined
-#
-#    - name: Set SSH port to 22
-#      set_fact:
-#        ansible_port: &quot;22&quot;
-#      when: ssh_port_default.state is defined
-#Finally, right after the SSH server is configured and the port has been changed I have this:
-#
-#- name: Set SSH port to 1234
-#  set_fact:
-#    ansible_port: &quot;1234&quot;
-#
-# 2018-10-09
-# https://stackoverflow.com/questions/34333058/ansible-change-ssh-port-in-playbook
-#</command>
+</command>
     </hudson.tasks.Shell>
     <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@0.6.2">
       <playbook>${JOB_NAME}.yaml</playbook>
@@ -179,13 +154,79 @@ EOF
       <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
     </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
     <hudson.tasks.Shell>
-      <command>unset UpdatePackageName CmdHosts PassWord ret vars ansible_sudo_pass UpdatePackageName State 
-test -f ${JOB_NAME}.hosts &amp;&amp; rm ${JOB_NAME}.hosts
-test -f ${JOB_NAME}.yaml &amp;&amp; rm ${JOB_NAME}.yaml
+      <command>unset UpdatePackageName CmdHosts PassWord ret vars ansible_sudo_pass UpdatePackageName State UpdatePackageNameOld
+#test -f ${JOB_NAME}.hosts &amp;&amp; rm ${JOB_NAME}.hosts
+#test -f ${JOB_NAME}.yaml &amp;&amp; rm ${JOB_NAME}.yaml
 #test -f ${JOB_NAME}.retry &amp;&amp; rm ${JOB_NAME}.retry</command>
     </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>########################################################
+#My inventory looks like this:
+#
+#[webservers]
+#web01.somedomain.com ansible_port=1234
+#My playbook looks like this:
+#
+#- name: Determine SSH port
+#  hosts: all
+#  gather_facts: no
+#  remote_user: root
+#  tasks:
+#    - name: &amp;quot;Check port {{ ansible_port }}&amp;quot;
+#      wait_for:
+#        port: &amp;quot;{{ ansible_port }}&amp;quot;
+#        state: &amp;quot;started&amp;quot;
+#        host: &amp;quot;{{ inventory_hostname }}&amp;quot;
+#        connect_timeout: &amp;quot;5&amp;quot;
+#        timeout: &amp;quot;5&amp;quot;
+#      delegate_to: &amp;quot;localhost&amp;quot;
+#      ignore_errors: &amp;quot;yes&amp;quot;
+#      register: ssh_port
+#
+#    - name: &amp;quot;Check port 22&amp;quot;
+#      wait_for:
+#        port: &amp;quot;22&amp;quot;
+#        state: &amp;quot;started&amp;quot;
+#        host: &amp;quot;{{ inventory_hostname }}&amp;quot;
+#        connect_timeout: &amp;quot;5&amp;quot;
+#        timeout: &amp;quot;5&amp;quot;
+#      delegate_to: &amp;quot;localhost&amp;quot;
+#      ignore_errors: &amp;quot;yes&amp;quot;
+#      register: ssh_port_default
+#      when: 
+#        - ssh_port is defined 
+#        - ssh_port.state is undefined
+#
+#    - name: Set SSH port to 22
+#      set_fact:
+#        ansible_port: &amp;quot;22&amp;quot;
+#      when: ssh_port_default.state is defined
+#Finally, right after the SSH server is configured and the port has been changed I have this:
+#
+#- name: Set SSH port to 1234
+#  set_fact:
+#    ansible_port: &amp;quot;1234&amp;quot;
+#
+# 2018-10-09
+# https://stackoverflow.com/questions/34333058/ansible-change-ssh-port-in-playbook
+#</command>
+    </hudson.tasks.Shell>
   </builders>
-  <publishers/>
+  <publishers>
+    <hudson.plugins.ws__cleanup.WsCleanup plugin="ws-cleanup@0.33">
+      <patterns class="empty-list"/>
+      <deleteDirs>false</deleteDirs>
+      <skipWhenFailed>false</skipWhenFailed>
+      <cleanWhenSuccess>true</cleanWhenSuccess>
+      <cleanWhenUnstable>true</cleanWhenUnstable>
+      <cleanWhenFailure>true</cleanWhenFailure>
+      <cleanWhenNotBuilt>true</cleanWhenNotBuilt>
+      <cleanWhenAborted>true</cleanWhenAborted>
+      <notFailBuild>false</notFailBuild>
+      <cleanupMatrixParent>false</cleanupMatrixParent>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.WsCleanup>
+  </publishers>
   <buildWrappers>
     <EnvInjectPasswordWrapper plugin="envinject@2.1.5">
       <injectGlobalPasswords>false</injectGlobalPasswords>
@@ -193,7 +234,11 @@ test -f ${JOB_NAME}.yaml &amp;&amp; rm ${JOB_NAME}.yaml
       <passwordEntries>
         <EnvInjectPasswordEntry>
           <name>PassWord</name>
-          <value>{gMdpv6Sy0eSAOIBJFPm7xCyNgwjq4G9v=}</value>
+          <value>{z26DRu5NW1XLlHuXAsrycKuwND7WkDpi=}</value>
+        </EnvInjectPasswordEntry>
+        <EnvInjectPasswordEntry>
+          <name>ssh_port</name>
+          <value>{z26DRu5NW1XLlHuXAsrycKuwND7WkDpi=}</value>
         </EnvInjectPasswordEntry>
       </passwordEntries>
     </EnvInjectPasswordWrapper>
