@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
-# 要查询的城市是由业务部门提供,每行一个城市名称,存放在./city_name.txt文件. 
+# 要查询的城市是由业务部门提供,一行一城市名称,存放在./city_name.txt文件. 
 # 这其中涉及到查询mysql操作，查询elasticsearch操作. 
 # 查询mysql操作是为了拿到各个城市对应的城市代码,然后根据城市代码去查询elasticsearch,得到平均参考价. 
 
@@ -99,9 +99,7 @@ Clear() {
 Help() {
     InitFile
     Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
-code:
-根据城市名查询mysql数据库,获得城市代码.
-将要查询的城市名列表保存到 $city_name_file
+1 一行一城市名称,存放在 $city_name_file
 tee $city_name_file <<-'EOF'
 北京
 上海
@@ -109,13 +107,16 @@ tee $city_name_file <<-'EOF'
 ...
 EOF
 
-price:
-根据执行上一步拿到的城市代码,去查询elasticsearch,
-获得 四星级酒店标间含双早的平均参考价(元/间/夜),
-保存到$city_name_code_avg_price;
+2 $0 code
+根据城市名查询mysql数据库,获得城市代码.
 
-clear:
-清空文件,城市代码:$city_name_file,平均参考价:$city_name_code_avg_price.
+3 $0 price
+根据执行上一步拿到的城市代码,查询elasticsearch,
+获得 四星级酒店标间含双早的平均参考价(元/间/夜),
+保存好$city_name_code_avg_price 文件,发送给相关人员;
+
+4 $0 clear
+清空文件$city_name_file $city_name_code_avg_price.
 """
     echo -e "$Show"
 }
