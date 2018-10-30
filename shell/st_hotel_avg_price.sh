@@ -1,31 +1,59 @@
 #!/usr/bin/env bash
-#
-# 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
-# 要查询的城市是由业务部门提供,一行一城市名称,存放在./city_name.txt文件. 
-# 这其中涉及到查询mysql操作，查询elasticsearch操作. 
-# 查询mysql操作是为了拿到各个城市对应的城市代码,然后根据城市代码去查询elasticsearch,得到平均参考价. 
+
+mysql_u='user'
+mysql_h='127.0.0.1'
+mysql_p='pass'
+mysql_P=3306
+ESurl='http://127.0.0.1:9200/gn_hotel/_search'
+
+Help() {
+    Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
+1 一行一城市名称,存放在 $city_name_file
+tee $city_name_file <<-'EOF'
+北京
+上海
+广州
+...
+EOF
+
+2 $0 code
+根据城市名称查询mysql数据库,获得城市代码.
+
+3 $0 price
+根据执行上一步拿到的城市代码,查询elasticsearch,
+获得当前 四星级酒店标间含双早的平均参考价(元/间/夜),
+保存好$city_name_code_avg_price 文件,发送给相关人员.
+
+4 $0 clear
+清理文件 $city_name_file $city_name_code_avg_price
+"""
+    echo -e "$Show"
+}
+
+TouchFilePath() {
+    city_name_file='./city_name.txt'
+    city_name_code_file='./city_name_code.txt'
+    city_name_code_avg_price='./city_name_code_avg_price.txt'
+}
+
+TouchFile() {
+    test -f $city_name_file || touch $city_name_file
+    test -f $city_name_code_file || touch $city_name_code_file
+    test -f $city_name_code_avg_price || touch $city_name_code_avg_price
+}
 
 InitDb() {
-    MYSQL_U='user'
-    MYSQL_H='127.0.0.1'
-    MYSQL_p='pass'
-    MYSQL_P=3306
+    MYSQL_U="$mysql_u"
+    MYSQL_H="$mysql_h"
+    MYSQL_p="$mysql_p"
+    MYSQL_P="$mysql_P"
     MYSQL_CMD_ALL_CITY_CODE="use st_hotel;SELECT city_name,city_code FROM bs_city WHERE city_code!='' AND city_name!='';"
     MYSQL_CMD="use st_hotel;SELECT city_name,city_code FROM bs_city WHERE city_code!='' AND city_name='CITY_NAME';"
 }
 
 InitUrl() {
-    EsUrl='http://127.0.0.1:9200/gn_hotel/_search'
+    EsUrl="$ESurl"
     CurlPar='{"size":0,"_source":["cnName","dayprices.0","star"],"aggs":{"avg_price":{"avg":{"field":"dayprices.0"}}},"query":{"bool":{"filter":[{"term":{"cityCode":"CITYCODE"}},{"bool":{"should":[{"terms":{"star":["4"]}},{"terms":{"whoseStar":["4"]}}]}},{"range":{"dayprices.0":{"from":100,"to":10000,"include_lower":true,"include_upper":true}}}]}}}'
-}
-
-InitFile() {
-    city_name_file='./city_name.txt'
-    city_name_code_file='./city_name_code.txt'
-    city_name_code_avg_price='./city_name_code_avg_price.txt'
-    test -f $city_name_file || touch $city_name_file
-    test -f $city_name_code_file || touch $city_name_code_file
-    test -f $city_name_code_avg_price || touch $city_name_code_avg_price
 }
 
 GetCityCode() {
@@ -92,60 +120,47 @@ GetAvgPrice() {
 
 Clear() {
     #test -f $city_name_file && cat /dev/null > $city_name_file
-    test -f $city_name_code_file && cat /dev/null > $city_name_code_file
-    test -f $city_name_code_avg_price && cat /dev/null > $city_name_code_avg_price
-}
-
-Help() {
-    InitFile
-    Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
-1 一行一城市名称,存放在 $city_name_file
-tee $city_name_file <<-'EOF'
-北京
-上海
-广州
-...
-EOF
-
-2 $0 code
-根据城市名查询mysql数据库,获得城市代码.
-
-3 $0 price
-根据执行上一步拿到的城市代码,查询elasticsearch,
-获得 四星级酒店标间含双早的平均参考价(元/间/夜),
-保存好$city_name_code_avg_price 文件,发送给相关人员;
-
-4 $0 clear
-清空文件$city_name_file $city_name_code_avg_price.
-"""
-    echo -e "$Show"
+    test -f $city_name_file && rm $city_name_file
+    test -f $city_name_code_file && rm $city_name_code_file
+    test -f $city_name_code_avg_price && rm $city_name_code_avg_price
 }
 
 if [ "$#" -ne 1 ]; then
+    TouchFilePath
     Help
     exit 1
 else
 case $1 in 
     code )
+        TouchFilePath
+        TouchFile
         InitDb
         InitUrl
-        InitFile
         #GetCityCode
         GetCityCodeAll
     ;;
     price )
+        TouchFilePath
+        TouchFile
         InitDb
         InitUrl
-        InitFile
         GetAvgPrice
     ;;
     clear )
-        InitFile
+        TouchFilePath
         Clear
     ;;
     *)
+        TouchFilePath
         Help
     ;;
 esac
 fi
+unset mysql_u mysql_h mysql_p mysql_P ESurl
+#
+# 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
+# 要查询的城市是由业务部门提供,一行一城市名称,存放在./city_name.txt文件. 
+# 这其中涉及到查询mysql操作，查询elasticsearch操作. 
+# 查询mysql操作是为了拿到各个城市对应的城市代码,然后根据城市代码去查询elasticsearch,得到平均参考价. 
+# 2018-10-30
 
