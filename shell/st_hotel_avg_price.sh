@@ -7,7 +7,7 @@ mysql_P=3306
 ESurl='http://127.0.0.1:9200/gn_hotel/_search'
 
 Help() {
-    Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
+Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
 1 一行一城市名称,存放在 $city_name_file
 tee $city_name_file <<-'EOF'
 北京
@@ -25,9 +25,8 @@ EOF
 保存好$city_name_code_avg_price 文件,发送给相关人员.
 
 4 $0 clear
-清理文件 $city_name_file $city_name_code_avg_price
-"""
-    echo -e "$Show"
+清理文件 $city_name_file $city_name_code_avg_price"""
+echo -e "$Show"
 }
 
 TouchFilePath() {
