@@ -58,40 +58,40 @@ GetCityCode() {
     # 如果中间要经mycat查库可能会有超时情况,建议直连数据库.
     # 只有一次while循环效率高,但会有多次查库操作.
     test -s $city_name_file && true || false
-    while read LINE
-    do
+    while read LINE; do
         MYSQL_CMD_NEW=$(echo $MYSQL_CMD|sed -e "s|CITY_NAME|$LINE|g")
         #echo $MYSQL_CMD_NEW
         CityNameCode=(`mysql -u"$mysql_u" -p"$mysql_p" -h "$mysql_h" -P $mysql_P -e "$MYSQL_CMD_NEW" | sed -n '$p'`)
-        sleep 0.2
-        echo ${CityNameCode[@]}
+        sleep 0.5
+        #echo ${CityNameCode[@]}
         if [ -n "$CityNameCode" ]; then
             test -w $city_name_code_file && echo ${CityNameCode[@]} >> $city_name_code_file
         else
             echo "Not Found City Code: $MYSQL_CMD_NEW"
         fi
-        sleep 1
     done < $city_name_file
 }
 GetCityCodeAll() {
-    # 一次获取所有城市代码,以勉多次查询数据库.缺点:while+for循环效率低.
-    # 时间复杂应该为O(m+n),因为效率取决于要查询的城市列表规模和所有城市的规模.
-    AllCityCode=$(mysql -u"$mysql_u" -p"$mysql_p" -h "$mysql_h" -P $mysql_P -e "$MYSQL_CMD_ALL_CITY_CODE")
-    sleep 3
-    AllCityCode=(`printf ' %s,%s ' $AllCityCode`)
-    test -s $city_name_file && true || false
-    while read LINE
-    do
-        for xyz in ${AllCityCode[*]} 
-        do
-            ijk=`echo $xyz|cut -d',' -f1`
-            Code=`echo $xyz|cut -d',' -f2`
-            if [ "$LINE" = "$ijk" ];then
-                echo "add: $ijk $Code >> $city_name_code_file"
-                test -w $city_name_code_file && echo "$ijk $Code" >> $city_name_code_file
+    # 一次获取所有城市代码,以勉多次查询数据库.
+    # 时间复杂应该为O(n),因为执行效率取决于要查询的城市列表规模.
+    # AllCityCode=$(mysql -u"$mysql_u" -p"$mysql_p" -h "$mysql_h" -P $mysql_P -e "$MYSQL_CMD_ALL_CITY_CODE")
+    # AllCityCode=(`printf '%s,%s|' $AllCityCode`)
+    # echo "${AllCityCode[@]}" | grep -o "广州,[[:alnum:]].*[[:alnum:]]\|"
+    if [ -s "$city_name_file" -a -r "$city_name_file" ]; then
+        LINE=(`cat "$city_name_file"`)
+        AllCityCode=$(mysql -u"$mysql_u" -p"$mysql_p" -h "$mysql_h" -P $mysql_P -e "$MYSQL_CMD_ALL_CITY_CODE")
+        for line in "${LINE[@]}"; do
+            AllCityCodeNew="`echo "${AllCityCode[@]}" | grep -o "${line}[[:blank:]].*[[:alnum:]]$"`"
+            echo "$AllCityCodeNew"
+            if [[ -w $city_name_code_file ]] && [[ -n "$AllCityCodeNew" ]]; then
+                echo "$AllCityCodeNew" >> $city_name_code_file
             fi
+            sleep 0.5
         done
-    done < $city_name_file
+    else
+        Help
+        exit 1
+    fi
 }
 
 GetAvgPrice() {
@@ -103,8 +103,7 @@ GetAvgPrice() {
         echo "$0 price [1-8]"
         exit 1
     fi
-    while read LINE
-    do
+    while read LINE; do
         CityCode=($LINE)
         #echo ">>>${CityCode[1]}"
         CurlParNew=`echo $CurlPar | sed -e "s|CITYCODE|${CityCode[1]}|g" -e "s|WHOSESTAR|$WhoseStar|g"`
@@ -118,7 +117,7 @@ GetAvgPrice() {
         else
             echo "Not Found..."
         fi
-        sleep 1
+        sleep 0.5
     done < $city_name_code_file
 }
 
@@ -140,8 +139,8 @@ case $1 in
         TouchFile
         InitDb
         InitUrl
-        GetCityCode
-        #GetCityCodeAll
+        #time GetCityCode
+        GetCityCodeAll
     ;;
     price )
         WhoseStar=$2
@@ -161,7 +160,7 @@ case $1 in
     ;;
 esac
 fi
-unset mysql_u mysql_h mysql_p mysql_P ESurl WhoseStar
+unset mysql_u mysql_h mysql_p mysql_P ESurl WhoseStar LINE line AllCityCodeNew AllCityCode
 #
 # 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
 # 要查询的城市是由业务部门提供,一行一城市名称,存放在./city_name.txt文件. 
