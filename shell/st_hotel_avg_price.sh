@@ -163,7 +163,7 @@ case $1 in
     ;;
 esac
 fi
-unset mysql_u mysql_h mysql_p mysql_P ESurl WhoseStar LINE line AllCityCodeNew AllCityCode
+unset mysql_u mysql_h mysql_p mysql_P ESurl WhoseStar LINE line AllCityCodeNew AllCityCode WhoseStar
 #
 # 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
 # 要查询的城市是由业务部门提供,一行一城市名称,存放在./city_name.txt文件. 
