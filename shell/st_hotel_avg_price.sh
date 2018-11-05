@@ -5,7 +5,10 @@ mysql_h='127.0.0.1'
 mysql_p='pass'
 mysql_P=3306
 ESurl='http://127.0.0.1:9200/gn_hotel/_search'
-WhoseStar=
+
+WhoseStar=$2
+WhoseStar=`echo ${WhoseStar:=0}`
+echo "WhoseStar: $WhoseStar"
 
 Help() {
 Show="""\033[33m"$0"\033[0m\033[36m [code|price|clear] \033[0m
@@ -21,26 +24,26 @@ EOF
 根据城市名称查询mysql数据库,获得城市代码.
 
 3 $0 price [1-8]
-1-8表示酒店星级.
+1-8 WhoseStar酒店星级.
 根据执行上一步拿到的城市代码,查询elasticsearch,
 获得当时,酒店标间含双早的平均参考价(元/间/夜),
-保存好$city_name_code_avg_price 文件,发送给相关人员.
+保存好${city_name_code_avg_price}.\${WhoseStar}.txt 文件,发送给相关人员.
 
 4 $0 clear
-清理文件 $city_name_file $city_name_code_avg_price"""
+清理文件 $city_name_file ${city_name_code_avg_price}.\${WhoseStar}.txt"""
 echo -e "$Show"
 }
 
 TouchFilePath() {
     city_name_file='./city_name.txt'
     city_name_code_file='./city_name_code.txt'
-    city_name_code_avg_price='./city_name_code_avg_price.txt'
+    city_name_code_avg_price='./city_name_code_avg_price'
 }
 
 TouchFile() {
     test -f $city_name_file || touch $city_name_file
     test -f $city_name_code_file || touch $city_name_code_file
-    test -f $city_name_code_avg_price || touch $city_name_code_avg_price
+    test -f ${city_name_code_avg_price}.${WhoseStar}.txt || touch ${city_name_code_avg_price}.${WhoseStar}.txt
 }
 
 InitDb() {
@@ -96,7 +99,7 @@ GetCityCodeAll() {
 
 GetAvgPrice() {
     test -s $city_name_code_file && true || false
-    test -s $city_name_code_avg_price && true || false
+    test -s ${city_name_code_avg_price}.${WhoseStar}.txt && true || false
     if [[ $WhoseStar -ge 1 ]] && [[ $WhoseStar -le 8 ]]; then
         :
     else
@@ -113,7 +116,7 @@ GetAvgPrice() {
         if [ -n $AvgPrice ]; then
             AvgPrice=`printf '%.3f\r\n' $AvgPrice`
             echo $AvgPrice 
-            test -w $city_name_code_avg_price && echo "${CityCode[0]} $AvgPrice" >> $city_name_code_avg_price.$WhoseStar.txt
+            test -w ${city_name_code_avg_price}.${WhoseStar}.txt && echo "${CityCode[0]} $AvgPrice" >> ${city_name_code_avg_price}.${WhoseStar}.txt
         else
             echo "Not Found..."
         fi
@@ -125,7 +128,8 @@ Clear() {
     #test -f $city_name_file && cat /dev/null > $city_name_file
     test -f $city_name_file && rm $city_name_file
     test -f $city_name_code_file && rm $city_name_code_file
-    test -f $city_name_code_avg_price && rm ${city_name_code_avg_price}
+    test -f ${city_name_code_avg_price}.${WhoseStar}.txt && rm ${city_name_code_avg_price}.${WhoseStar}.txt
+    test -f city_name_code_avg_price.\$\{WhoseStar\}.txt  && rm city_name_code_avg_price.\$\{WhoseStar\}.txt 
 }
 
 if [ "$#" -le 0 -o "$#" -ge 3 ]; then
@@ -143,7 +147,6 @@ case $1 in
         GetCityCodeAll
     ;;
     price )
-        WhoseStar=$2
         TouchFilePath
         TouchFile
         InitDb
@@ -167,4 +170,3 @@ unset mysql_u mysql_h mysql_p mysql_P ESurl WhoseStar LINE line AllCityCodeNew A
 # 这其中涉及到查询mysql操作，查询elasticsearch操作. 
 # 查询mysql操作是为了拿到各个城市对应的城市代码,然后根据城市代码去查询elasticsearch,得到平均参考价. 
 # 2018-10-30
-
