@@ -54,6 +54,18 @@ InitDb() {
 InitUrl() {
     EsUrl="$ESurl"
     CurlPar='{"size":0,"_source":["cnName","dayprices.0","star"],"aggs":{"avg_price":{"avg":{"field":"dayprices.0"}}},"query":{"bool":{"filter":[{"term":{"cityCode":"CITYCODE"}},{"bool":{"should":[{"terms":{"star":["WHOSESTAR"]}},{"terms":{"whoseStar":["WHOSESTAR"]}}]}},{"range":{"dayprices.0":{"from":100,"to":10000,"include_lower":true,"include_upper":true}}}]}}}'
+
+#Elasticsearch 查询条件语句
+#MIN
+#star:5
+#whoseStar:5
+#{"size":0,"_source":["cnName","dayprices.0","star"],"aggs":{"avg_price":{"min":{"field":"dayprices.0"}}},"query":{"bool":{"filter":[{"bool":{"should":[{"terms":{"star":["5"]}},{"terms":{"whoseStar":["5"]}}]}},{"range":{"dayprices.0":{"from":100,"to":10000,"include_lower":true,"include_upper":true}}}]}}}
+
+#MAX
+#star:2
+#whoseStar:2
+#{"size":0,"_source":["cnName","dayprices.0","star"],"aggs":{"avg_price":{"max":{"field":"dayprices.0"}}},"query":{"bool":{"filter":[{"bool":{"should":[{"terms":{"star":["2"]}},{"terms":{"whoseStar":["2"]}}]}},{"range":{"dayprices.0":{"from":100,"to":10000,"include_lower":true,"include_upper":true}}}]}}}
+
 }
 
 GetCityCode() {
