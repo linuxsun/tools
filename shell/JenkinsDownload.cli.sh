@@ -2,8 +2,8 @@
 
 Help () {
     echo """$0 [-f|-d] [xyz]
--f /path/xyz/FileName
--d 10.x.y.z:[/path/xyz/FileName|/path/DirName]
+-f /path/xyz/FileName.tar.gz
+-d 10.x.y.z:/path/xyz/[FileName.tar.gz|DirName]
 """
 }
 
