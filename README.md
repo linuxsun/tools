@@ -89,7 +89,11 @@ jenkins_update_jobs_config_xml.py 脚本使用方法
 2) 源码管理
 ```
     选择git 仓库
-    脚本地址: http://username@192.168.10.123/tools/python.git
+    脚本地址: https://github.com/linuxsun/tools.git
+
+    git clone https://github.com/linuxsun/tools.git
+    python/jenkins/jenkins_update_jobs_config_xml.py
+    python/jenkins/jenkins_dingding.py
 
 ```
 
@@ -155,7 +159,6 @@ http_url.py
 jenkins+ansible+playook 部署 tomcat8\jdk1.8 
 jenkins参数化构建，与ansible的template模块都到用，灵活性高。
 README
-# ![show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/README.md)
 
 ansible部署 jdk1.8
 ```
@@ -210,7 +213,12 @@ jenkins部署tomcat8
 
 
 # 10. playbook/saturn
-Saturn由唯品会开发，该脚本可实现自动部署saturn-executor以及saturn-console。
+Saturn
+
+https://github.com/vipshop/Saturn
+
+该脚本可实现自动部署saturn-executor以及saturn-console。
+
 
 动部署saturn-executor两种方式：
 
@@ -247,7 +255,7 @@ playbook 使用方法有两种方式,原理与Saturn-executor类似。
 10.4) 使用jenkins部署
 参考10.2
 
-Jenkins自动构建步骤，可以参考: config-console-build.xml \ config-console-deploy.xml
+jenkins自动构建步骤，可以参考: config-console-build.xml \ config-console-deploy.xml
 
 部署界面请参考:
 #![show](https://github.com/linuxsun/tools/blob/master/playbook/saturn/saturn-console-build.png)
@@ -257,6 +265,8 @@ Jenkins自动构建步骤，可以参考: config-console-build.xml \ config-cons
 ansible部署supervisord脚本
 
 ```
+git clone https://github.com/linuxsun/tools.git
+cd playbook/supervisor;
 ansible-playbook -i supervisor supervisor.yml
 systemctl status supervisord.service
 ```
@@ -298,7 +308,6 @@ docker run -itd -p 0.0.0.0:53:53/udp -p 0.0.0.0:53:53 --link some-etcd:some-etcd
 see: https://github.com/coreos/etcd
 ```
 
-# 14 ......
 
 
 
