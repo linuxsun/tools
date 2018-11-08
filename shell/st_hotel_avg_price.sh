@@ -97,12 +97,12 @@ GetCityCodeAll() {
         AllCityCode=$(mysql -u"$mysql_u" -p"$mysql_p" -h "$mysql_h" -P $mysql_P -e "$MYSQL_CMD_ALL_CITY_CODE")
         for line in "${LINE[@]}"; do
             AllCityCodeNew="`echo "${AllCityCode[@]}" | grep -o "${line}[[:blank:]].*[[:alnum:]]$"`"
-            echo "$AllCityCodeNew"
+            #echo "$AllCityCodeNew"
             if [[ -w $city_name_code_file ]] && [[ -n "$AllCityCodeNew" ]]; then
                 echo "$AllCityCodeNew" >> $city_name_code_file
             fi
-            sleep 0.5
         done
+        echo "AllCityCode >> $city_name_code_file"
     else
         Help
         exit 1
