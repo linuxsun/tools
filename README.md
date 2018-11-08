@@ -70,7 +70,7 @@ b5.test.dev.io 192.168.80.105 600
 
 # 二、Python
 
-# 7. https://github.com/linuxsun/tools/tree/master/python/jenkins
+# 7. python/jenkins
 
 脚本用途：
 ```
@@ -141,15 +141,17 @@ jenkins_dingding.py 脚本使用方法
 
 ```
 
-# 8. https://github.com/linuxsun/tools/tree/master/python/http_code
+# 8. python/http_code
 http状态码监控与警告消息推送到阿里钉钉群。
+
 http_code.py
+
 http_url.py  
 
 
 # 三、playbook
 
-# 9. https://github.com/linuxsun/tools/tree/master/playbook/ansible-tomcat8-jdk18
+# 9. playbook/ansible-tomcat8-jdk18
 jenkins+ansible+playook 部署 tomcat8\jdk1.8 
 jenkins参数化构建，与ansible的template模块都到用，灵活性高。
 README
@@ -207,7 +209,7 @@ jenkins部署tomcat8
 # ![show](https://github.com/linuxsun/tools/blob/master/playbook/ansible-tomcat8-jdk18/ansible-tomcat8-build.png)
 
 
-# 10. https://github.com/linuxsun/tools/tree/master/playbook/saturn
+# 10. playbook/saturn
 Saturn由唯品会开发，该脚本可实现自动部署saturn-executor以及saturn-console。
 
 动部署saturn-executor两种方式：
@@ -251,13 +253,12 @@ Jenkins自动构建步骤，可以参考: config-console-build.xml \ config-cons
 #![show](https://github.com/linuxsun/tools/blob/master/playbook/saturn/saturn-console-build.png)
 
 
-# 11 https://github.com/linuxsun/tools/tree/master/playbook/supervisor
+# 11 playbook/supervisor
 ansible部署supervisord脚本
 
 ```
 ansible-playbook -i supervisor supervisor.yml
 systemctl status supervisord.service
-https://github.com/linuxsun/tools.git
 ```
 
 # 12 tools/playbook/aliyun_cloud_monitor.yaml
@@ -267,35 +268,34 @@ https://github.com/linuxsun/tools.git
 
 # 四、docker
 
-# 13 https://github.com/linuxsun/tools/tree/master/Dockerfile/coredns
+# 13 Dockerfile/coredns
 coredns部署
 
 build
 ```
-    docker build --build-arg WORKDIR_DK="/etc/coredns" --build-arg ETCD_ADDR_DK="http://some-etcd:2379" -t coredns .
-                                                                                        |    ^   |
-                                                                                        | (Here) |
+docker build --build-arg WORKDIR_DK="/etc/coredns" --build-arg ETCD_ADDR_DK="http://some-etcd:2379" -t coredns .
+                                                                                    |    ^   |
+                                                                                    | (Here) |
 ```
 
 run
-
-  1) start etcd
+1) start etcd
 ```
-    docker pull elcolio/etcd
-    docker run -d -p 2379:2379 -p 2380:2380 -p 4001:4001 -p 7001:7001 \
-    -v /data/backup/dir:/data --name some-etcd elcolio/etcd:latest
-                                    |    ^    |
-                                    |  (Here) |        
+docker pull elcolio/etcd
+docker run -d -p 2379:2379 -p 2380:2380 -p 4001:4001 -p 7001:7001 \
+-v /data/backup/dir:/data --name some-etcd elcolio/etcd:latest
+                                |    ^    |
+                                |  (Here) |        
 
-    see: https://hub.docker.com/r/elcolio/etcd/
+see: https://hub.docker.com/r/elcolio/etcd/
 ```
 
-  2) start coredns
+2) start coredns
 ```
-    docker run -itd -p 0.0.0.0:53:53/udp -p 0.0.0.0:53:53 --link some-etcd:some-etcd --name coredns coredns
-                                                                |         ^         |
-                                                                |       (Here)      |
-    see: https://github.com/coreos/etcd
+docker run -itd -p 0.0.0.0:53:53/udp -p 0.0.0.0:53:53 --link some-etcd:some-etcd --name coredns coredns
+                                                            |         ^         |
+                                                            |       (Here)      |
+see: https://github.com/coreos/etcd
 ```
 
 # 14 ......
