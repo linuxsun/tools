@@ -1,5 +1,9 @@
 # 为什么要创建这个tools工具箱？
-将日常工作中可能需要重复操作的事务将它疏理出来，形成脚本，提升效率。
+
+将日常工作中需要重复操作的事务将它疏理出来，形成脚本，提升效率。
+
+
+
 
 # 一、 Shell
 
@@ -34,7 +38,7 @@ EOF
 ```
 
 # 2. JenkinsDownload.cli.sh
-一个可传递参数的cli客户端工具脚本，特色是：Jenkins参数化构建、远程触发构建、shell的整合。
+一个可传递参数的cli客户端工具脚本，特点是Jenkins参数化构建、远程触发构建、shell的整合。
 
 
 # 3. install_mesos_master.sh install_mesos_node.sh
@@ -84,17 +88,12 @@ b5.test.dev.io 192.168.80.105 600
 
 jenkins_update_jobs_config_xml.py 脚本使用方法
 
-1) 创建 jnekins 自由风格任务
+1) 创建 jenkins 自由风格任务
 
 2) 源码管理
 ```
     选择git 仓库
     脚本地址: https://github.com/linuxsun/tools.git
-
-    git clone https://github.com/linuxsun/tools.git
-    python/jenkins/jenkins_update_jobs_config_xml.py
-    python/jenkins/jenkins_dingding.py
-
 ```
 
 3）选择 参数化构建过程
@@ -121,8 +120,9 @@ jenkins_update_jobs_config_xml.py 脚本使用方法
 ```
 
 4）增加构建步骤 Execute Windows batch command 
+
 ```
-C:\Python27\python.exe jenkins\jenkins_update_jobs_config_xml.py %config_xml_root% %daysToKeep% %numToKeep% %artifactDaysToKeep% %artifactNumToKeep% %skip_str_list%
+python python/jenkins/jenkins_update_jobs_config_xml.py %config_xml_root% %daysToKeep% %numToKeep% %artifactDaysToKeep% %artifactNumToKeep% %skip_str_list%
 
 ```
 
@@ -141,7 +141,7 @@ jenkins_dingding.py 脚本使用方法
 1) 编辑你的jobs
 
 ```
-构建后操作--> Post build task --> Log text: .* --> Operation: --AND-- --> Script: D:\Python27\python.exe D:\Python27\jenkins_dingding.py %JOB_BASE_NAME%
+构建后操作--> Post build task --> Log text: .* --> Operation: --AND-- --> Script: python python/jenkins/jenkins_dingding.py %JOB_BASE_NAME%
 
 ```
 
