@@ -128,7 +128,7 @@ jenkins_update_jobs_config_xml.py 脚本使用方法
 
 ```
 python python/jenkins/jenkins_update_jobs_config_xml.py \
-%config_xml_root% %daysToKeep% %numToKeep% %artifactDaysToKeep% %artifactNumToKeep% %skip_str_list%
+$config_xml_root $daysToKeep $numToKeep $artifactDaysToKeep $artifactNumToKeep $skip_str_list
 
 ```
 
@@ -147,7 +147,7 @@ jenkins_dingding.py 脚本使用方法
 1) 编辑你的jobs
 
 ```
-构建后操作--> Post build task --> Log text: .* --> Operation: --AND-- --> Script: python python/jenkins/jenkins_dingding.py %JOB_BASE_NAME%
+构建后操作--> Post build task --> Log text: .* --> Operation: --AND-- --> Script: python python/jenkins/jenkins_dingding.py $JOB_BASE_NAME
 
 ```
 
