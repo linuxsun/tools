@@ -61,15 +61,15 @@ numToKeep 保持构建的最大个数
 artifactNumToKeep 发布包最大保留#个构建。
 
 
-# 6. shell/coredns/add.sh
+# 6. shell/coredns/coredns.cli.sh
 适用于 k8s 或者 Mesos。
 
 CoreDns客户端脚本，可用此脚本整成到jenkins以及Dockerfile实现灵活添加A记录.
 
 ```
-./add.sh 
-./add.sh -p HOST_NAME IP TTL
-./add.sh -f list.txt
+./coredns.cli.sh 
+./coredns.cli.sh -p HOST_NAME IP TTL
+./coredns.cli.sh -f list.txt
 
 list.txt:
 b3.test.dev.io 192.168.80.103 1200
