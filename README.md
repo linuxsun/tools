@@ -124,10 +124,11 @@ jenkins_update_jobs_config_xml.py 脚本使用方法
 
 ```
 
-4）增加构建步骤 Execute Windows batch command 
+4）增加构建步骤 Execute shell
 
 ```
-python python/jenkins/jenkins_update_jobs_config_xml.py %config_xml_root% %daysToKeep% %numToKeep% %artifactDaysToKeep% %artifactNumToKeep% %skip_str_list%
+python python/jenkins/jenkins_update_jobs_config_xml.py \
+%config_xml_root% %daysToKeep% %numToKeep% %artifactDaysToKeep% %artifactNumToKeep% %skip_str_list%
 
 ```
 
