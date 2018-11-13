@@ -14,7 +14,7 @@ Docker可能是近年最火的技术了,容器从很高的视角,审视/解决�
 ```
 
 
-# 一、 Shell
+# 第一部份 Shell
 
 # 1. st_hotel_avg_price.sh
 此脚本的用途：获取主要城市,四星级酒店标间含双早的平均参考价（元/间/夜）.
@@ -85,7 +85,7 @@ b4.test.dev.io 192.168.80.104
 b5.test.dev.io 192.168.80.105 600
 ```
 
-# 二、Python
+# 第二部分 Python
 
 # 7. python/jenkins
 
@@ -167,12 +167,11 @@ http_code.py
 http_url.py  
 
 
-# 三、playbook
+# 第三部份 playbook
 
-# 9. playbook/ansible-tomcat8-jdk18
+# 9. playbook/ansible-tomcat8-jdk18 
 jenkins+ansible+playook 部署 tomcat8\jdk1.8 
 jenkins参数化构建，与ansible的template模块都到用，灵活性高。
-README
 
 ansible部署 jdk1.8
 ```
@@ -290,7 +289,7 @@ systemctl status supervisord.service
 批量安装阿里云监控playbook
 
 
-# 四、docker
+# 第四部分 docker
 
 
 # 13 Dockerfile/coredns
