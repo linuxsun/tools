@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ "$(whoami)" != "root" ]]; then
   
@@ -7,17 +7,17 @@ if [[ "$(whoami)" != "root" ]]; then
 fi
 
 LOCK_FILE="/var/run/sys_init.lock"
-SSH_PORT=65522
+SSH_PORT=22
 
 yum_update(){
     #yum -y install wget
     #cd /etc/yum.repos.d/ && mkdir bak && mv ./*.repo bak
     #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
     #wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
-    yum clean all && yum makecache
+    yum clean all && yum makecache 2>&1 >/dev/null
     yum -y install net-tools lrzsz telnet gcc gcc-c++ make cmake libxml2-devel \
 openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel \
-autoconf automake zlib-devel python-devel
+autoconf automake zlib-devel python-devel 2>&1 >/dev/null
 }
 
 zone_time(){
@@ -69,10 +69,11 @@ EOF
 fi
 
 }
- 
 sshd_config(){
     SSHD_CONFIG="/etc/ssh/sshd_config"
-    cp $SSHD_CONFIG ${SSHD_CONFIG}.$RANDOM 
+    SSH_CONFIG="/etc/ssh/ssh_config"
+    cp $SSHD_CONFIG ${SSHD_CONFIG}.$RANDOM
+    cp $SSH_CONFIG ${SSH_CONFIG}.$RANDOM
     sed -i -e 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' \
         -e 's/#UseDNS yes/UseDNS no/'\
         -e 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g'\
@@ -83,22 +84,21 @@ sshd_config(){
         #-e 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g'\
         #sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
     systemctl restart crond
-    SSH_CONFIG="/etc/ssh/ssh_config"
     unset ret
-    grep 'StrictHostKeyChecking no' $SSH_CONFIG ; ret=$?
-    if [ $ret -eq 1 ]; then
+    grep 'StrictHostKeyChecking no' $SSH_CONFIG >/dev/null 2>&1 ; ret=$?
+    if [ $ret -ne 0 ]; then
         echo 'StrictHostKeyChecking no' >> $SSH_CONFIG
         echo 'UserKnownHostsFile /dev/null' >> $SSH_CONFIG
     fi
 echo -e """
 If only the key login is allowed, please: 
-\033[33msed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
-sed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG 
+\033[33msed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG \033[0m
+If the root user is not allowed to log in, please:
+\033[33msed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG \033[0m
 systemctl restart sshd.service
-\033[0m
 """
-}
-  
+} 
+
 sysctl_config(){
 SYSCTL="/etc/sysctl.conf"
 /bin/cp "$SYSCTL" "$SYSCTL".bak.$RANDOM
@@ -342,7 +342,7 @@ vm.max_map_count=262144
 #vfs_cache_pressure=200
 
 EOF
-/sbin/sysctl -p
+/sbin/sysctl -p 2>&1 >/dev/null
 echo "sysctl set OK!!"
 }
   
@@ -398,7 +398,7 @@ if [ -f $LOCK_FILE ]; then
   echo -e "\033[31m>>> delete $LOCK_FILE \033[0m"
   exit 1
 else
-  echo -e "\033[31m press ctrl+C to cancel \033[0m"
+  echo -e "\033[31mplease ctrl+C to cancel \033[0m"
   sleep 6
   main
   /bin/touch "$LOCK_FILE"
