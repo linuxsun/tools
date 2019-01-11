@@ -100,10 +100,9 @@ systemctl restart sshd.service
 }
   
 sysctl_config(){
-RANM=`echo $RANDOM`
 SYSCTL="/etc/sysctl.conf"
-/bin/cp "$SYSCTL" "$SYSCTL".bak.$RANM
-cat > $SYSCTL << EOF
+/bin/cp "$SYSCTL" "$SYSCTL".bak.$RANDOM
+cat > $SYSCTL << 'EOF'
 # Controls the System Request debugging functionality of the kernel
 kernel.sysrq = 0
 
