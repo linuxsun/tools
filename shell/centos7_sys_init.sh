@@ -15,7 +15,9 @@ yum_update(){
     #wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
     #wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
     yum clean all && yum makecache
-    yum -y install net-tools lrzsz telnet gcc gcc-c++ make cmake libxml2-devel openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel autoconf automake zlib-devel python-devel
+    yum -y install net-tools lrzsz telnet gcc gcc-c++ make cmake libxml2-devel \
+openssl-devel curl curl-devel unzip sudo ntp libaio-devel wget vim ncurses-devel \
+autoconf automake zlib-devel python-devel
 }
 
 zone_time(){
@@ -43,7 +45,7 @@ fi
 
 if [ $MEMTOTAL -ge 16770000 ]
 then
-    NOFILE=65535
+    NOFILE=65536
 elif [ $MEMTOTAL -ge 8380000 ]
 then
     NOFILE=51200
@@ -55,7 +57,7 @@ then
     NOFILE=2048
 fi
 
-ulimit -SHn $MEMTOTAL
+ulimit -SHn $NOFILE
 /bin/grep "$NOFILE" "$LIMITS" > /dev/null ;ret=$?
 if [ $ret -eq 1 ];then
 cat >> $LIMITS << EOF
@@ -70,16 +72,17 @@ fi
  
 sshd_config(){
     SSHD_CONFIG="/etc/ssh/sshd_config"
+    cp $SSHD_CONFIG ${SSHD_CONFIG}.$RANDOM 
     sed -i -e 's/^GSSAPIAuthentication yes$/GSSAPIAuthentication no/' \
         -e 's/#UseDNS yes/UseDNS no/'\
         -e 's|#PermitEmptyPasswords\ no|PermitEmptyPasswords\ no|g'\
         -e "s|#Port\ 22|Port\ $SSH_PORT|g"\
-        -e 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g'\
         -e 's|ChallengeResponseAuthentication\ yes|ChallengeResponseAuthentication\ no|g'\
         -e 's|\#RSAAuthentication\ yes|RSAAuthentication\ yes|g'\
         -e 's|\#PubkeyAuthentication\ yes|PubkeyAuthentication\ yes|g' $SSHD_CONFIG
+        #-e 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g'\
         #sed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
-    systemctl start crond
+    systemctl restart crond
     SSH_CONFIG="/etc/ssh/ssh_config"
     unset ret
     grep 'StrictHostKeyChecking no' $SSH_CONFIG ; ret=$?
@@ -87,6 +90,13 @@ sshd_config(){
         echo 'StrictHostKeyChecking no' >> $SSH_CONFIG
         echo 'UserKnownHostsFile /dev/null' >> $SSH_CONFIG
     fi
+echo -e """
+If only the key login is allowed, please: 
+\033[33msed -i 's|PasswordAuthentication\ yes|PasswordAuthentication\ no|g' $SSHD_CONFIG
+sed -i 's|#PermitRootLogin\ yes|PermitRootLogin\ no|g' $SSHD_CONFIG 
+systemctl restart sshd.service
+\033[0m
+"""
 }
   
 sysctl_config(){
