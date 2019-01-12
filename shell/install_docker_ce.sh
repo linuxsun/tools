@@ -32,6 +32,27 @@ Install() {
     systemctl restart docker.service
 }
 
+BRIDGE_NF_CALL_IPTABLES() {
+#"""
+#docker info
+#......
+#WARNING: bridge-nf-call-iptables is disabled
+#WARNING: bridge-nf-call-ip6tables is disabled
+#"""
+    SYSCTL='/etc/sysctl.conf'
+    SYSCTL_DOCKER_BRIDGE_NF_CALL=('net.bridge.bridge-nf-call-ip6tables = 1' \
+'net.bridge.bridge-nf-call-iptables = 1' '#net.bridge.bridge-nf-call-arptables = 1')
+
+    for i in "${SYSCTL_DOCKER_BRIDGE_NF_CALL[@]}" ; do
+        grep "$i" $SYSCTL >/dev/null 2>&1 ; ret=$?
+        if [ $ret -ne 0 ]; then
+tee -a "$SYSCTL" <<- EOF
+$i
+EOF
+        fi
+    done
+}
+
 Config() {
 DAEMON_JSON="/etc/docker/daemon.json"
 RDOM=$(date "+%Y%m%d%H%M%S")
@@ -53,16 +74,16 @@ echo """
 
 2) yum upgrade --assumeyes --tolerant Or  sudo yum update --assumeyes 
 
-3) tee /etc/modules-load.d/overlay.conf <<-'EOF'
+3) tee /etc/modules-load.d/overlay.conf <<-'EOF' #可选项,因为默认存储驱动是overlay2
 overlay
 EOF
 
 4) reboot
 
-5) lsmod | grep overlay
+5) lsmod | grep overlay #可选项
 overlay
 
-6) "$0 '[remove|install|config]'"
+6) "$0 '[remove|install|config|bridge-nf-call-iptables]'"
 """
 }
 
@@ -80,6 +101,9 @@ case $1 in
   ;;
   config)
     Config
+  ;;
+  bridge-nf-call-iptables)
+     BRIDGE_NF_CALL_IPTABLES
   ;;
   *)
     Help
