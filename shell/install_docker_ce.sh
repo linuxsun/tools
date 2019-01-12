@@ -49,6 +49,7 @@ BRIDGE_NF_CALL_IPTABLES() {
 tee -a "$SYSCTL" <<- EOF
 $i
 EOF
+        /sbin/sysctl -p 2>&1 >/dev/null
         fi
     done
 }
