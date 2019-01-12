@@ -2,7 +2,7 @@
 
 DEV="$1"
 DATA="/var/lib/docker"
-LOCK="/var/run/fdisk_lvm.lock"
+LOCK="/var/run/fdisk_lvms.lock"
 FSTAB="/etc/fstab"
 fstatus=0
 test -f $LOCK && fstatus=0 || fstatus=1
