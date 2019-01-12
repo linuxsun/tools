@@ -5,17 +5,26 @@ MAX="$2"
 FSTAB="/etc/fstab"
 DATA="/var/lib/docker"
 LOCK="/var/run/fdisk_lvm.lock"
-
 test -d $DATA || mkdir -p $DATA
 
-if [ $# -eq 3 ] ;then
-  df -h | grep "$DISK" ; ret=$?
+Help() {
+  echo """1. rm $LOCK
+2. $0 /dev/[sdbX|vdbX] 200G
+3. reboot
+4. ./fdisk_lvms.sh"""  
+  exit 1
+}
+
+if [ $# -eq 2 ] ;then
+  #df -h | grep "$DISK" ; ret=$?
+  fdisk -l |grep "$DISK" |grep -E '(83  Linux|8e  Linux LVM)' >/dev/null 2>&1 ; ret=$?
 else
-  echo "EG: $0 /dev/vdX 300G"
-  exit
+  Help
 fi
 
-if [ $ret -eq 0 ] ; then
+fstatus=0
+test -f $LOCK && fstatus=0 || fstatus=1
+if [ $ret -eq 1 ] && [ $fstatus -eq 1 ] ; then
 #echo $ret
 #fdisk $DISK
 
@@ -35,16 +44,10 @@ t
 p
 wq
 EOF
-
 touch $LOCK
 chmod -x $0
-
-echo """#####################
-
-
->>> reboot
->>> wait 10M
->>> echo "./fdisk_lvms.sh /dev/sdaXXX"
-"""
+echo " Format the disk $DISK successfully, please restart the server"
+else
+  Help
 fi
 # https://github.com/linuxsun
