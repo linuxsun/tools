@@ -7,29 +7,33 @@ SysType() {
 SysType
 
 Remove() {
-    yum -y autoremove docker docker-common container-selinux
-    yum -y autoremove docker-selinux
-    yum -y autoremove docker-engine docker-engine-selinux
+    yum -y autoremove docker docker-common container-selinux 2>&1 >/dev/null
+    yum -y autoremove docker-selinux 2>&1 >/dev/null
+    yum -y autoremove docker-engine docker-engine-selinux 2>&1 >/dev/null
 }
 
 Install() {
     yum install -y yum-utils \
-    device-mapper-persistent-data lvm2
+    device-mapper-persistent-data lvm2 2>&1 >/dev/null
 
     yum-config-manager \
     --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
+    https://download.docker.com/linux/centos/docker-ce.repo 2>&1 >/dev/null
     
     #yum-config-manager --enable docker-ce-edge
     # yum-config-manager --enable docker-ce-test
-    yum-config-manager --disable docker-ce-edge
+    yum-config-manager --disable docker-ce-edge 2>&1 >/dev/null
 
-    yum makecache fast
-    yum install -y docker-ce
-    yum list docker-ce --showduplicates | sort -r
+    yum makecache fast 2>&1 >/dev/null
+    yum install -y docker-ce 2>&1 >/dev/null
+    yum list docker-ce --showduplicates | sort -r 
     
     systemctl enable docker.service
     systemctl restart docker.service
+    docker_version=`rpm -qa  docker-ce`
+    if [ -n "$docker_version" ];then
+        echo "Successfully installed: $docker_version"
+    fi
 }
 
 BRIDGE_NF_CALL_IPTABLES() {
