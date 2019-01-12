@@ -355,30 +355,36 @@ iptables_config(){
 systemctl mask firewalld
 systemctl stop firewalld.service
 systemctl disable firewalld.service
-yum -y install iptables-services
-systemctl enable iptables
-systemctl enable ip6tables
-cat > /etc/sysconfig/iptables << EOF
-# Firewall configuration written by system-config-securitylevel
-# Manual customization of this file is not recommended.
-*filter
-:INPUT DROP [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:syn-flood - [0:0]
--A INPUT -i lo -j ACCEPT
--A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+#yum -y install iptables-services
+
+IPTABLES="/etc/sysconfig/iptables"
+IPFWS=`mktemp`
+tee $IPFWS <<- EOF >/dev/null 2>&1
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport $SSH_PORT -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
 -A INPUT -p icmp -m limit --limit 100/sec --limit-burst 100 -j ACCEPT
--A INPUT -p icmp -m limit --limit 1/s --limit-burst 10 -j ACCEPT
--A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j syn-flood
+-A INPUT -p icmp -m limit --limit 1/ss --limit-burst 10 -j ACCEPT
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
--A syn-flood -p tcp -m limit --limit 3/sec --limit-burst 6 -j RETURN
--A syn-flood -j REJECT --reject-with icmp-port-unreachable
-COMMIT
 EOF
+
+unset ret
+while read LINE
+do
+    check=$(echo $LINE | sed -e 's/-A/-C/g')
+    /usr/sbin/xtables-multi iptables $check ;ret=$?
+    if [ "$ret" -eq 0 ]; then
+        continue
+        #exit 0;
+    else
+        xtables-multi iptables $LINE; >/dev/null 2>&1
+    fi &>/dev/null
+done < $IPFWS
+cp $IPTABLES ${IPTABLES}.$RANDOM
+iptables-save > $IPTABLES
+\rm "$IPFWS"
+/usr/bin/systemctl enable iptables
+/usr/bin/systemctl enable ip6tables
 /usr/bin/systemctl restart iptables.service
 /usr/bin/systemctl restart ip6tables
 }
