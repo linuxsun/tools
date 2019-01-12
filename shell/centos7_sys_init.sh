@@ -355,7 +355,7 @@ iptables_config(){
 systemctl mask firewalld
 systemctl stop firewalld.service
 systemctl disable firewalld.service
-#yum -y install iptables-services
+yum -y install iptables-services
 
 IPTABLES="/etc/sysconfig/iptables"
 IPFWS=`mktemp`
