@@ -16,10 +16,11 @@ rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noar
 yum -y install mesosphere-zookeeper
 yum -y install mesos marathon.x86_64
 
-hostname $MESOS_MASTER_NAME
-tee /etc/hostname <<- EOF
-$MESOS_MASTER_NAME
-EOF
+#hostname $MESOS_MASTER_NAME
+#tee /etc/hostname <<- EOF
+#$MESOS_MASTER_NAME
+#EOF
+hostnamectl --static set-hostname $MESOS_MASTER_NAME
 
 unset ret
 grep "$MASTER_IP" $HOSTS ; ret=$?
@@ -42,7 +43,8 @@ EOF
 systemctl enable zookeeper.service
 systemctl restart zookeeper
 systemctl status zookeeper
-/etc/mesos-master/quorum should remain 1 >/dev/null
+
+#/etc/mesos-master/quorum should remain 1
 
 tee /etc/mesos-master/ip <<- EOF
 $MASTER_IP
@@ -74,7 +76,7 @@ tee /etc/default/mesos-slave <<- EOF
 MASTER=`cat /etc/mesos/zk`
 EOF
 
-tee /etc/mesos-acls <<- EOF
+tee /etc/mesos-acls <<- 'EOF' >/dev/null 2>&1
 {
     "run_tasks": [
     {
@@ -100,8 +102,8 @@ tee /etc/mesos-acls <<- EOF
 EOF
 echo 'file:///etc/mesos-acls' > /etc/mesos-master/acls
 
-ADD_WITH_SALT=`echo "$RANDOM"pyqZhmdDfBSO4kEH"$RANDOM"`
-tee /etc/mesos/credentials <<- EOF
+ADD_WITH_SALT=`echo "$RANDOM"pyqZhmdDfBSO4kEH"$RANDOM"` >/dev/null 2>&1
+tee /etc/mesos/credentials <<- EOF >/dev/null 2>&1
 {
     "credentials": [
         {
@@ -112,7 +114,7 @@ tee /etc/mesos/credentials <<- EOF
 }
 EOF
 
-tee /etc/mesos/marathon.secret <<- EOF
+tee /etc/mesos/marathon.secret <<- EOF >/dev/null 2>&1
 $ADD_WITH_SALT
 EOF
 
@@ -124,7 +126,7 @@ test -d /etc/marathon/conf || mkdir -p /etc/marathon/conf
 echo 'marathon' > /etc/marathon/conf/mesos_authentication_principal
 echo 'marathon' > /etc/marathon/conf/mesos_role
 
-tee $IPFWS <<- EOF
+tee $IPFWS <<- EOF >/dev/null 2>&1
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 5050 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 2181 -j ACCEPT
@@ -132,8 +134,8 @@ tee $IPFWS <<- EOF
 -A INPUT -p udp -m state --state NEW -m udp --dport 53 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 953 -j ACCEPT
 -A INPUT -p udp -m state --state NEW -m udp --dport 953 -j ACCEPT
--A INPUT -s $MASTER_IP -j ACCEPT
--A INPUT -s $NODE_IP -j ACCEPT
+-A INPUT -s ${MASTER_IP} -j ACCEPT
+-A INPUT -s ${NODE_IP} -j ACCEPT
 EOF
 
 unset ret
@@ -146,12 +148,12 @@ do
         continue
         #exit 0;
     else
-        xtables-multi iptables $LINE;
+        xtables-multi iptables $LINE; 
     fi &>/dev/null
 
 done < $IPFWS
-
-$(which iptables-save) > $IPTABLES
+cp $IPTABLES $IPTABLES.$RANDOM
+iptables-save > $IPTABLES
 \rm "$IPFWS"
 
 # Mesos Master
@@ -163,7 +165,7 @@ systemctl status mesos-master.service
 systemctl restart marathon.service
 systemctl status marathon.service
 
-# https://github.com/linuxsun
+# https://github.com/linuxsun/mesos-tutorial
 # https://coolex.info/blog/523.html
 # https://yuerblog.cc/2017/02/10/marathon-persistent-volumes/
 # https://mesosphere.github.io/marathon/docs/framework-authentication.html
