@@ -380,9 +380,12 @@ do
         xtables-multi iptables $LINE; >/dev/null 2>&1
     fi &>/dev/null
 done < $IPFWS
-cp $IPTABLES ${IPTABLES}.$RANDOM
-iptables-save > $IPTABLES
+test -f $IPTABLES && cp $IPTABLES ${IPTABLES}.$RANDOM
+
+#docker启动会自动添加iptables rules，请不要让iptables开机自动加载默认的rules,默认rules不带docker相关的链表
+#iptables-save > $IPTABLES
 \rm "$IPFWS"
+
 /usr/bin/systemctl enable iptables
 /usr/bin/systemctl enable ip6tables
 /usr/bin/systemctl restart iptables.service
@@ -396,7 +399,7 @@ ulimit_config
 sysctl_config
 sshd_config
 #selinux_config
-#iptables_config
+#iptables_config # docker与firewalld兼容性不好,建议禁用firewalld，改为iptables。
 }
 
 if [ -f $LOCK_FILE ]; then
