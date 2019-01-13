@@ -87,6 +87,8 @@ done < $IPFWS
 test -f $IPTABLES_RULES && cat /dev/null > $IPTABLES_RULES
 sed -i 's/-A INPUT/iptables -I INPUT/g' $IPFWS  && \mv -f $IPFWS $IPTABLES_RULES
 sed -i '1 i #!/usr/bin/env bash' $IPTABLES_RULES
+test -f $IPTABLES_RULES && chmod 754 $IPTABLES_RULES
+`$IPTABLES_RULES`
 
 grep "$IPTABLES_RULES" /etc/rc.local > /dev/null 2>&1 ; ret=$? 
 if [ $ret -eq 1 ]; then
@@ -107,10 +109,8 @@ ps -aux | grep mesos-slave
 
 # docker启动会自动添加iptables rules，请不要让iptables开机自动加载默认的rules,
 # 默认rules不带docker相关的链表
-`$IPTABLES_RULES`
 test -f $IPTABLES && \cp $IPTABLES ${IPTABLES}.$RANDOM && rm $IPTABLES
 $(which iptables-save) > ${IPTABLES}.$RANDOM
-test -f $IPTABLES_RULES && chmod 754 $IPTABLES_RULES
 /usr/bin/systemctl restart iptables.service
 /usr/bin/systemctl restart ip6tables
 
