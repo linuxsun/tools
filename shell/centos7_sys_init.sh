@@ -363,8 +363,7 @@ tee $IPFWS <<- EOF >/dev/null 2>&1
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport $SSH_PORT -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
--A INPUT -p icmp -m limit --limit 100/sec --limit-burst 100 -j ACCEPT
--A INPUT -p icmp -m limit --limit 1/ss --limit-burst 10 -j ACCEPT
+-A INPUT -p icmp -m limit --limit 10/sec --limit-burst 100 -j ACCEPT
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
 EOF
 
