@@ -1,23 +1,55 @@
 #!/usr/bin/env bash
-# install mesos master for centos 7.2
-# 此脚本适用于一主一从的场景。
+# install mesos master for centos 7.6
+# 此脚本适用于一主多从节点的场景。
 # Mesos Master
 
-MESOS_MASTER_NAME="mesos-master"
-MESOS_NODE_NAME="mesos-node1"
+# 分别在对应节点执行
+#hostnamectl set-hostname master.marathon.mesos
+#hostnamectl set-hostname node1.marathon.mesos
+#hostnamectl set-hostname node2.marathon.mesos
+#hostnamectl set-hostname node3.marathon.mesos
+#hostnamectl set-hostname node1.marathon.mesos
+#hostnamectl set-hostname storage.marathon.mesos
+#hostnamectl set-hostname harbor.marathon.mesos
+
+DNS_ZONE="marathon.mesos"
+MESOS_MASTER_NAME="master.${DNS_ZONE}"
+MESOS_NODE1_NAME="node1.${DNS_ZONE}"
+
 MASTER_IP="192.168.90.25"
-NODE_IP="192.168.90.26"
-NODE1_IP="$NODE_IP"
+NODE1_IP="192.168.90.26"
 NODE2_IP="192.168.90.27"
 NODE3_IP="192.168.90.28"
 MESOS_HARBOR="192.168.90.24"
 MESOS_STORAGE="192.168.90.30"
-QUORUM="1" # master集群数一般为1、3、5、7。
+
+QUORUM="1" # master集群数一般为奇数
 HOSTS="/etc/hosts"
 IPFWS=`mktemp`
 IPTABLES="/etc/sysconfig/iptables"
+REPOS_MESOSPHERE_IO="""http://repos.mesosphere.io/el/7/no\
+arch/RPMS/mesosphere-el-repo-7-1.noarch.rpm"""
 
-rpm -Uvh http://repos.mesosphere.io/el/7/noarch/RPMS/mesosphere-el-repo-7-1.noarch.rpm >/dev/null 2>&1
+HOSTS_IP_NAME=( \
+"$MESOS_HARBOR<>harbor.${DNS_ZONE}" \
+"$MASTER_IP<>$MESOS_MASTER_NAME" \
+"$NODE1_IP<>$MESOS_NODE1_NAME" \
+"$NODE2_IP<>node2.${DNS_ZONE}" \
+"$NODE3_IP<>node3.${DNS_ZONE}" \
+"$MESOS_STORAGE<>storage.${DNS_ZONE}")
+
+for xyz in ${HOSTS_IP_NAME[*]} ; do
+    unset ret
+    xyz=$(echo $xyz | sed -e 's|<>| |g') 
+    grep "$xyz" $HOSTS >/dev/null 2>&1 ; ret=$? 
+    if [ $ret -ne 0 ]; then
+        tee -a $HOSTS <<- EOF >/dev/null 2>&1
+$xyz
+EOF
+fi
+done
+
+rpm -Uvh $REPOS_MESOSPHERE_IO >/dev/null 2>&1
 yum -y install mesosphere-zookeeper >/dev/null 2>&1
 yum -y install mesos marathon.x86_64 >/dev/null 2>&1
 
@@ -27,14 +59,6 @@ yum -y install mesos marathon.x86_64 >/dev/null 2>&1
 #EOF
 hostnamectl --static set-hostname $MESOS_MASTER_NAME
 
-unset ret
-grep "$MASTER_IP" $HOSTS ; ret=$?
-
-if [ $ret -eq 1 ];then
-    echo "$MASTER_IP $MESOS_MASTER_NAME" >> $HOSTS
-    echo "$NODE_IP $MESOS_NODE_NAME" >> $HOSTS
-fi
-
 tee /etc/zookeeper/conf/zoo.cfg <<- EOF
 maxClientCnxns=50
 tickTime=2000
@@ -42,7 +66,7 @@ initLimit=10
 syncLimit=5
 dataDir=/var/lib/zookeeper
 clientPort=2181
-server.1=$MASTER_IP:2888:3888
+server.1=$MESOS_MASTER_NAME:2888:3888
 EOF
 
 systemctl enable zookeeper.service
@@ -56,15 +80,15 @@ $MASTER_IP
 EOF
 
 tee /etc/mesos-master/hostname <<- EOF
-$MASTER_IP
+$MESOS_MASTER_NAME
 EOF
 
 tee /etc/mesos-master/cluster <<- EOF
-charles-cluster
+charles-cluster.marathon.mesos
 EOF
 
 tee /etc/mesos/zk <<- EOF
-zk://$MASTER_IP:2181/mesos
+zk://$MESOS_MASTER_NAME:2181/mesos
 EOF
 
 tee /etc/mesos-master/quorum <<- EOF
@@ -81,7 +105,7 @@ tee /etc/default/mesos-slave <<- EOF
 MASTER=`cat /etc/mesos/zk`
 EOF
 
-tee /etc/mesos-acls <<- 'EOF'  >/dev/null 2>&1
+tee /etc/mesos-acls <<- 'EOF' >/dev/null 2>&1
 {
     "run_tasks": [
     {
@@ -107,8 +131,8 @@ tee /etc/mesos-acls <<- 'EOF'  >/dev/null 2>&1
 EOF
 echo 'file:///etc/mesos-acls' > /etc/mesos-master/acls
 
-ADD_WITH_SALT=`echo "$RANDOM"pyqZhmdDfBSO4kEH"$RANDOM"`  >/dev/null 2>&1
-tee /etc/mesos/credentials <<- EOF  >/dev/null 2>&1
+ADD_WITH_SALT=`echo "$RANDOM"pyqZhmdDfBSO4kEH"$RANDOM"` >/dev/null 2>&1
+tee /etc/mesos/credentials <<- EOF >/dev/null 2>&1
 {
     "credentials": [
         {
@@ -140,7 +164,6 @@ tee $IPFWS <<- EOF >/dev/null 2>&1
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 953 -j ACCEPT
 -A INPUT -p udp -m state --state NEW -m udp --dport 953 -j ACCEPT
 -A INPUT -s $MASTER_IP -j ACCEPT
--A INPUT -s $NODE_IP -j ACCEPT
 -A INPUT -s $NODE1_IP -j ACCEPT
 -A INPUT -s $NODE2_IP -j ACCEPT
 -A INPUT -s $NODE3_IP -j ACCEPT
@@ -153,17 +176,15 @@ while read LINE
 do
     check=$(echo $LINE | sed -e 's/-A/-C/g')
     /usr/sbin/xtables-multi iptables $check ;ret=$?
-
     if [ "$ret" -eq 0 ]; then
         continue
         #exit 0;
     else
         xtables-multi iptables $LINE;
-    fi &>/dev/null
-
+    fi >/dev/null 2>&1
 done < $IPFWS
-cp $IPTABLES $IPTABLES.$RANDOM
-iptables-save > $IPTABLES
+test -f $IPTABLES && \mv -f $IPTABLES $IPTABLES.$RANDOM
+iptables-save > $IPTABLES.$RANDOM
 \rm "$IPFWS"
 
 # Mesos Master
@@ -181,5 +202,3 @@ systemctl status marathon.service
 # https://mesosphere.github.io/marathon/docs/framework-authentication.html
 # http://mesos.apache.org/documentation/latest/authentication/
 # 
-
-
