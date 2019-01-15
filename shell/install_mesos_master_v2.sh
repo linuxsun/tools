@@ -3,8 +3,6 @@
 # 此脚本适用于一主多从节点的场景。
 # Mesos Master
 
-# 分别在对应节点执行
-
 DNS_ZONE="marathon.mesos"
 MESOS_MASTER_NAME="master.${DNS_ZONE}"
 MESOS_NODE1_NAME="node1.${DNS_ZONE}"
@@ -54,7 +52,7 @@ initLimit=10
 syncLimit=5
 dataDir=/var/lib/zookeeper
 clientPort=2181
-server.1=$MESOS_MASTER_NAME:2888:3888
+server.1=$MASTER_IP:2888:3888
 EOF
 
 systemctl enable zookeeper.service
@@ -68,15 +66,16 @@ $MASTER_IP
 EOF
 
 tee /etc/mesos-master/hostname <<- EOF
-$MESOS_MASTER_NAME
+$MASTER_IP
 EOF
+#$MESOS_MASTER_NAME
 
 tee /etc/mesos-master/cluster <<- EOF
 charles-cluster.marathon.mesos
 EOF
 
 tee /etc/mesos/zk <<- EOF
-zk://$MESOS_MASTER_NAME:2181/mesos
+zk://$MASTER_IP:2181/mesos
 EOF
 
 tee /etc/mesos-master/quorum <<- EOF
