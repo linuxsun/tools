@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # install mesos node for centos 7.6
 # 此脚本适用于一主多从的场景。
+# Mesos Node
 
 DNS_ZONE="marathon.mesos"
 MESOS_MASTER_NAME="master.${DNS_ZONE}"  
