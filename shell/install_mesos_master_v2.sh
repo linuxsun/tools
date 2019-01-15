@@ -4,17 +4,11 @@
 # Mesos Master
 
 # 分别在对应节点执行
-#hostnamectl set-hostname master.marathon.mesos
-#hostnamectl set-hostname node1.marathon.mesos
-#hostnamectl set-hostname node2.marathon.mesos
-#hostnamectl set-hostname node3.marathon.mesos
-#hostnamectl set-hostname node1.marathon.mesos
-#hostnamectl set-hostname storage.marathon.mesos
-#hostnamectl set-hostname harbor.marathon.mesos
 
 DNS_ZONE="marathon.mesos"
 MESOS_MASTER_NAME="master.${DNS_ZONE}"
 MESOS_NODE1_NAME="node1.${DNS_ZONE}"
+hostnamectl --static set-hostname $MESOS_MASTER_NAME
 
 MASTER_IP="192.168.90.25"
 NODE1_IP="192.168.90.26"
@@ -52,12 +46,6 @@ done
 rpm -Uvh $REPOS_MESOSPHERE_IO >/dev/null 2>&1
 yum -y install mesosphere-zookeeper >/dev/null 2>&1
 yum -y install mesos marathon.x86_64 >/dev/null 2>&1
-
-#hostname $MESOS_MASTER_NAME
-#tee /etc/hostname <<- EOF
-#$MESOS_MASTER_NAME
-#EOF
-hostnamectl --static set-hostname $MESOS_MASTER_NAME
 
 tee /etc/zookeeper/conf/zoo.cfg <<- EOF
 maxClientCnxns=50
