@@ -7,6 +7,11 @@
     proxy . /etc/resolv.conf
 }
 
+mesos {
+    forward . 192.168.90.26
+    log
+}
+
 dev.com {
     etcd {
         stubzones

@@ -2,7 +2,8 @@
 
 ### build
 ```
-    docker build --build-arg WORKDIR_DK="/etc/coredns" --build-arg ETCD_ADDR_DK="http://some-etcd:2379" -t coredns .
+    #docker build --build-arg WORKDIR_DK="/etc/coredns" --build-arg ETCD_ADDR_DK="http://some-etcd:2379" -t coredns:v1.1.3 .
+    docker build --build-arg WORKDIR_DK="/etc/coredns" --build-arg ETCD_ADDR_DK="http://some-etcd:2379" -t harbor.dev.com/demo/coredns:v1.1.3 .
                                                                                         |    ^   |
                                                                                         | (Here) |
 ```
@@ -23,10 +24,18 @@
 
   2. start coredns
 ```
-    docker run -itd -p 0.0.0.0:53:53/udp -p 0.0.0.0:53:53 --link some-etcd:some-etcd --name coredns coredns
+    docker run -itd -p 0.0.0.0:53:53/udp -p 0.0.0.0:53:53 --link some-etcd:some-etcd --name coredns coredns:v1.1.3
                                                                 |         ^         |
                                                                 |       (Here)      |
     see: https://github.com/coreos/etcd
+```
+
+### docker push images
+```
+    docker login harbor.dev.com
+    Username: 
+    Password:
+    docker push harbor.dev.com/demo/coredns:v1.1.3
 ```
 
 ###
