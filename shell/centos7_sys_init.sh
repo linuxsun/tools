@@ -339,7 +339,7 @@ net.ipv6.route.flush = 1
 ### other ###
 ###
 vm.max_map_count=262144
-#vfs_cache_pressure=200
+#vm.vfs_cache_pressure=200
 
 EOF
 /sbin/sysctl -p 2>&1 >/dev/null
