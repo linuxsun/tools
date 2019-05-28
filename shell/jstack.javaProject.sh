@@ -53,4 +53,6 @@ maxSleepCount:$maxSleepCount freeMem:$freeMem minFreeMem:$minFreeMem"
 
 Main
 
+# chmod +x /etc/rc.d/rc.local
+# echo "su - admin -c 'nohup /home/admin/jstack.javaProject.sh >/dev/null 2>&1 &'" >> /etc/rc.local
 
