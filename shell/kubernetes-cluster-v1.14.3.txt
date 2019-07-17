@@ -20,6 +20,8 @@ EOF
 #yum install kubeadm-1.11.1 kubectl-1.11.1 
 yum remove kubelet-1.14.3 kubelet-1.14.3 kubectl-1.14.3 kubeadm-1.14.3
 
+##############################
+
 images=(
   kube-apiserver:v1.14.3
   kube-controller-manager:v1.14.3
@@ -130,7 +132,9 @@ kubectl --kubeconfig ./admin.conf proxy
 
 
 
-可视化插件
+################
+安装可视化插件kubernetes-dashboard
+
 该插件可能会随机选中集群中的一台节点去部署dashboard插件容器，所以ssh登录到该节点，先手工把镜像获取下来。
 docker pull kubernetesui/dashboard:v2.0.0-beta1
 docker pull kubernetesui/metrics-scraper:v1.0.0
@@ -184,6 +188,8 @@ kubectl cluster-info
 Kubernetes master is running at https://192.168.20.10:6443
 KubeDNS is running at https://192.168.20.10:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+
 
 kubectl get -f recommended.yaml
 NAME                   STATUS    AGE
@@ -242,11 +248,7 @@ EOF
 chmod 750 ./get_token.sh && ./get_token.sh
 
 
-
-参考资料：
-https://www.cnblogs.com/RainingNight/p/deploying-k8s-dashboard-ui.html
-
-
+####################
 部署容器存储插件 
 Rook 项目是一个基于 Ceph 的 Kubernetes 存储插件 生产级别可用的容器存储插件。 
 
@@ -292,12 +294,13 @@ kubectl describe pod -n rook-ceph rook-discover-7zp9v
 #kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 
 
+################
 参考资料
 1. 包v1beta2定义了kubeadm配置文件格式的v1beta2版本。
 https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2
 
 2.
-
+https://www.cnblogs.com/RainingNight/p/deploying-k8s-dashboard-ui.html
 
 
 
