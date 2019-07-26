@@ -269,6 +269,10 @@ ssh kube2 'docker load < ~/ceph_daemon-base.tar'
 ssh kube3 'docker load < ~/rook_ceph.tar'
 ssh kube3 'docker load < ~/ceph_daemon-base.tar'
 
+# 批量导出镜像
+# for i in `docker images|awk '{print $1,$2}'|tr -s ' ' ':' |grep -v 'REPOSITORY:TAG'`; do  img=${i%:*};  ver=${i#*:};  img=${img#*/} ; docker save -o ${img}.tar $i ; done
+# scp *.tar root@192.168.90.245:~/
+
 #这里并不是真的用wget下载.yaml文件，而是用浏览器打开三个.yaml文件，手工复制内容下来。
 wget https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/common.yaml
 wget https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/operator.yaml
