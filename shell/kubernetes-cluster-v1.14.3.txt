@@ -8,17 +8,27 @@ CentOS Linux release 7.6.1810 (Core)
 [root@kube1 ~]# uname -a                
 Linux kube1 3.10.0-957.21.3.el7.x86_64 #1 SMP Tue Jun 18 16:35:19 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
 
-tee /etc/hosts <<-'EOF'
-kube1 192.168.20.10 # master
-kube2 192.168.20.11 # node1
-kube3 192.168.20.12 # node2
+tee -a /etc/hosts <<-'EOF'
+192.168.20.10 kube1 # master
+192.168.20.11 kube2 # node1
+192.168.20.12 kube3 # node2
+EOF
+
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
 
 #yum install kubeadm
 # yum install kubelet  kubectl
 
 #yum install kubeadm-1.11.1 kubectl-1.11.1 
-yum remove kubelet-1.14.3 kubelet-1.14.3 kubectl-1.14.3 kubeadm-1.14.3
+yum install kubelet-1.14.3 kubectl-1.14.3 kubeadm-1.14.3
 
 ##############################
 
@@ -248,7 +258,8 @@ chmod 750 ./get_token.sh && ./get_token.sh
 
 
 ####################
-部署容器存储插件 
+
+部署容器存储插件
 Rook 项目是一个基于 Ceph 的 Kubernetes 存储插件 生产级别可用的容器存储插件。 
 
 # 在kube1(Master)执行以下指令：
@@ -269,19 +280,79 @@ ssh kube2 'docker load < ~/ceph_daemon-base.tar'
 ssh kube3 'docker load < ~/rook_ceph.tar'
 ssh kube3 'docker load < ~/ceph_daemon-base.tar'
 
-# 批量导出镜像
-# for i in `docker images|awk '{print $1,$2}'|tr -s ' ' ':' |grep -v 'REPOSITORY:TAG'`; do  img=${i%:*};  ver=${i#*:};  img=${img#*/} ; docker save -o ${img}.tar $i ; done
-# scp *.tar root@192.168.90.245:~/
-# for i in ./*.tar; do   docker load < $i; done
+#
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/common.yaml
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/operator.yaml
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/cluster.yaml
 
-#这里并不是真的用wget下载.yaml文件，而是用浏览器打开三个.yaml文件，手工复制内容下来。
-wget https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/common.yaml
-wget https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/operator.yaml
-wget https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/cluster.yaml
-
+# 创建一个rook-ceph集群。
 kubectl create -f common.yaml
 kubectl create -f operator.yaml
+
+# 当以下pod都正常running之后，再执行后续步骤: kubectl create -f cluster.yaml
+# verify the rook-ceph-operator, rook-ceph-agent, and rook-discover pods are in the `Running` state before proceeding
+kubectl -n rook-ceph get pod
+
+
+# 每个节点的“名称”字段应与其“kubernetes.io/hostname”标签相匹配。
+# - name: "kube3" #
+
+cat cluster-add-disk.yaml |grep -Ev '(^#|*.#)'
+apiVersion: ceph.rook.io/v1
+kind: CephCluster
+metadata:
+  name: rook-ceph
+  namespace: rook-ceph
+spec:
+  cephVersion:
+    image: ceph/daemon-base:latest-nautilus-devel
+    allowUnsupported: false
+  dataDirHostPath: /var/lib/rook
+  mon:
+    count: 3
+    allowMultiplePerNode: false
+  dashboard:
+    enabled: true
+  monitoring:
+    enabled: false
+    rulesNamespace: rook-ceph
+  network:
+    hostNetwork: false
+  rbdMirroring:
+    workers: 0
+  annotations:
+  resources:
+    useAllNodes: false
+    useAllDevices: false
+    deviceFilter:
+    location:
+    config:
+    directories:
+    - path: /var/lib/rook
+    nodes:
+    - name: "kube2"
+      devices:
+      - name: "sdd"
+      config:
+        storeType: bluestore
+        osdsPerDevice: "5"
+    - name: "kube3"
+      devices:
+      - name: "sdd"
+      config:
+        storeType: bluestore
+        osdsPerDevice: "5"
+    - name: "kube4"
+      devices:
+      - name: "sdd"
+      config:
+        storeType: bluestore
+        osdsPerDevice: "5"
+
+
 kubectl create -f cluster.yaml
+
+
 
 kubectl get pods --all-namespaces    
 kubernetes-dashboard   kubernetes-dashboard-6f89577b77-fzbgv         1/1     Running   4          41h
@@ -297,6 +368,210 @@ kubectl describe pod -n rook-ceph rook-discover-7zp9v
 
 #kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
 
+kubectl get ns
+kubectl get pod -n rook-ceph -o wide
+kubectl -n rook-ceph get deployment
+
+
+kubectl get pods -n rook-ceph
+NAME                                  READY   STATUS    RESTARTS   AGE
+rook-ceph-agent-6n857                 1/1     Running   0          26m
+rook-ceph-agent-b24kb                 1/1     Running   1          79m
+rook-ceph-operator-775cf575c5-llxsd   1/1     Running   0          56m
+rook-discover-sj5dq                   1/1     Running   0          26m
+rook-discover-smzsq                   1/1     Running   1          79m
+
+kubectl get service -n rook-ceph | grep dashboard
+
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/toolbox.yaml
+kubectl apply -f toolbox.yaml
+[root@kube1 ~]# kubectl -n rook-ceph get pods -o wide | grep ceph-tools
+rook-ceph-tools-b8c679f95-lbfwz       1/1     Running     0          28s     192.168.90.245   kube2   <none>           <none>
+kubectl -n rook-ceph exec -it rook-ceph-tools-b8c679f95-lbfwz sh
+sh-4.2# ceph status
+  cluster:
+    id:     4369be5c-46f8-42ce-9763-728807ae1594
+    health: HEALTH_WARN
+            1 osds down
+  services:
+    mon: 3 daemons, quorum a,b,c (age 3m)
+    mgr: a(active, since 13m)
+    osd: 6 osds: 5 up (since 3m), 6 in (since 3m)
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   37 GiB used, 131 GiB / 168 GiB avail
+    pgs:     
+exit
+
+kubectl apply -f dashboard-loadbalancer.yaml
+kubectl apply -f dashboard-ingress-https.yaml
+kubectl apply -f dashboard-external-http.yaml 
+kubectl apply -f dashboard-external-https.yaml
+
+kubectl get service -n rook-ceph | grep dashboard
+rook-ceph-mgr-dashboard                  ClusterIP   10.107.150.91    <none>        8443/TCP            3m58s
+rook-ceph-mgr-dashboard-external-https   NodePort    10.101.74.39     <none>        8443:31169/TCP      18s
+访问任意节点IP： http://IP:31169
+
+#获取rook-ceph密码
+MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
+kubectl -n rook-ceph logs $MGR_POD | grep password
+
+
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/storageclass.yaml
+kubectl apply -f storageclass.yaml
+[root@kube1 ~]# kubectl get storageclass
+NAME              PROVISIONER          AGE
+rook-ceph-block   ceph.rook.io/block   27m
+
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/mysql.yaml
+wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/wordpress.yaml
+kubectl apply -f mysql.yaml
+kubectl apply -f wordpress.yaml
+
+[root@kube1 ~]# kubectl get pvc
+NAME             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS      AGE
+mysql-pv-claim   Bound    pvc-3c93e5e4-b04b-11e9-9b13-005056a86b9c   1Gi        RWO            rook-ceph-block   23m
+wp-pv-claim      Bound    pvc-86a7e1f6-b04b-11e9-9b13-005056a86b9c   512Mi      RWO            rook-ceph-block   21m
+
+kubectl get pv
+
+kubectl -n rook-ceph get pods -o wide | grep ceph-tools
+rook-ceph-tools-b8c679f95-zxs4d       1/1     Running     0          28m   192.168.90.245   kube2   <none>           <none>
+kubectl -n rook-ceph exec -it  rook-ceph-tools-b8c679f95-zxs4d  sh
+sh-4.2# rbd info -p replicapool pvc-3c93e5e4-b04b-11e9-9b13-005056a86b9c
+rbd image 'pvc-3c93e5e4-b04b-11e9-9b13-005056a86b9c':
+        size 1 GiB in 256 objects
+        order 22 (4 MiB objects)
+sh-4.2# exit
+
+
+登陆pod检查rbd设备
+[root@kube1 ~]# kubectl get pod -o wide
+NAME                                READY   STATUS    RESTARTS   AGE   IP          NODE    NOMINATED NODE   READINESS GATES
+nginx-deployment-57bb869b8b-4942f   1/1     Running   3          24h   10.42.0.1   kube3   <none>           <none>
+nginx-deployment-57bb869b8b-xm25n   1/1     Running   2          24h   10.36.0.1   kube4   <none>           <none>
+wordpress-595685cc49-rtg4z          1/1     Running   0          23m   10.36.0.6   kube4   <none>           <none>
+wordpress-mysql-b78774f44-xx9lm     1/1     Running   0          25m   10.44.0.4   kube2   <none>           <none>
+[root@kube1 ~]# kubectl exec -it wordpress-595685cc49-rtg4z  bash
+root@wordpress-595685cc49-rtg4z:/var/www/html# mount|grep rbd
+/dev/rbd0 on /var/www/html type xfs (rw,relatime,attr2,inode64,sunit=8192,swidth=8192,noquota)
+
+
+rook参考：
+https://blog.csdn.net/networken/article/details/85772418
+https://github.com/rook/rook/wiki/Storage-Configuration-Design
+https://docs.ceph.com/docs/master/start/
+https://rook.io/docs/rook/v1.0/ceph-quickstart.html
+
+
+#kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+
+
+##################################################
+# Service与Ingress 
+所谓 Ingress，就是 Service 的“Service”。
+所谓 Ingress 对象，其实就是 Kubernetes 项目对“反向代理”的一种抽象。
+我如何能使用 Kubernetes 的 Ingress来创建一个统一的负载均衡器，从而实现当用户访问不同的域名时，能够访问到不同的 Deployment 呢？
+
+<pod-name>.<svc-name>.<namespace>.svc.cluster.local
+nginx-deployment.yaml
+
+kubectl create -f svc.yaml
+$ kubectl get service nginx
+NAME      TYPE         CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+nginx     ClusterIP    None         <none>        80/TCP    10s
+
+$ kubectl create -f statefulset.yaml
+$ kubectl get statefulset web
+NAME      DESIRED   CURRENT   AGE
+web       2         1         19s
+
+
+kubectl get pods -w -l app=nginx
+NAME      READY     STATUS    RESTARTS   AGE
+web-0     0/1       Pending   0          0s
+web-0     0/1       Pending   0         0s
+web-0     0/1       ContainerCreating   0         0s
+web-0     1/1       Running   0         19s
+web-1     0/1       Pending   0         0s
+web-1     0/1       Pending   0         0s
+web-1     0/1       ContainerCreating   0         0s
+web-1     1/1       Running   0         20s
+
+
+kubectl exec web-0 -- sh -c 'hostname'
+web-0
+$ kubectl exec web-1 -- sh -c 'hostname'
+web-1
+
+nameserver 10.96.0.10
+
+kubectl run -i --tty --image busybox dns-test --restart=Never --rm /bin/sh 
+$ nslookup web-0.nginx
+Server:    10.0.0.10
+Address 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      web-0.nginx
+Address 1: 10.244.1.8
+
+$ nslookup web-1.nginx
+Server:    10.0.0.10
+Address 1: 10.0.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      web-1.nginx
+Address 1: 10.244.2.8
+
+
+kubectl create -f statefulset.yaml
+$ kubectl get pvc -l app=nginx
+NAME        STATUS    VOLUME                                     CAPACITY   ACCESSMODES   AGE
+www-web-0   Bound     pvc-15c268c7-b507-11e6-932f-42010a800002   1Gi        RWO           48s
+www-web-1   Bound     pvc-15c79307-b507-11e6-932f-42010a800002   1Gi        RWO           48s
+
+web-0.nginx.default.svc.cluster.local
+nginx-deployment-57bb869b8b-zrclq.nginx.default.svc.cluster.local
+
+
+# busybox可能无法解释出A记录，换成tutum/dnsutils镜像
+kubectl run -i --tty --image tutum/dnsutils dns-test --restart=Never --rm /bin/sh
+
+# 在被重新创建出来的 Pod 容器里访问 http://localhost
+$ kubectl exec -it web-0 -- curl localhost
+hello web-0
+
+kubectl logs -f coredns-fb8b8dccf-h5t2h   -n kube-system  
+
+kubectl run -i --tty --image tutum/dnsutils dns-test --restart=Never --rm /bin/sh 
+
+# 在宿主机上执行,打开 iptables 的 TRACE 功能查看到数据包的传输过程 
+iptables -t raw -A OUTPUT -p icmp -j TRACE
+iptables -t raw -A PREROUTING -p icmp -j TRACE
+
+
+[root@kube1 ~]#  kubectl get svc -n ingress-nginx
+NAME            TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx   NodePort   10.102.247.199   <none>        80:31396/TCP,443:31942/TCP   5h42m
+
+
+kubectl get ingress
+kubectl describe ingress cafe-ingress
+
+IC_IP=192.168.204.12
+IC_HTTPS_PORT=31942 # 通过该指令获得kubectl get svc -n ingress-nginx
+
+# --insecure假证书
+curl --resolve cafe.example.com:$IC_HTTPS_PORT:$IC_IP https://cafe.example.com:$IC_HTTPS_PORT/coffee --insecure
+Server name: coffee-7dbb5795f6-vglbv
+Date: 03/Nov/2018:03:55:32 +0000
+URI: /coffee
+Request ID: e487e672673195c573147134167cf898
+
+curl -v -s -k --key certs/client.key --cert certs/client.crt https://127.0.0.1:8043
+
+
+
 
 ################
 参考资料
@@ -310,9 +585,3 @@ https://www.cnblogs.com/RainingNight/p/deploying-k8s-dashboard-ui.html
 https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
 
 
-
-
-
-
-
-	
