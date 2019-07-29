@@ -383,6 +383,18 @@ rook-discover-smzsq                   1/1     Running   1          79m
 
 kubectl get service -n rook-ceph | grep dashboard
 
+# rook-ceph-mon的IP地址正确获取方式
+[root@kube1 ~]# kubectl -n rook-ceph get service
+NAME                                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+rook-ceph-mgr                            ClusterIP   10.98.35.201     <none>        9283/TCP            46h
+rook-ceph-mgr-dashboard                  ClusterIP   10.107.150.91    <none>        8443/TCP            46h
+rook-ceph-mgr-dashboard-external-https   NodePort    10.101.74.39     <none>        8443:31169/TCP      46h
+rook-ceph-mon-a                          ClusterIP   10.108.224.132   <none>        6789/TCP,3300/TCP   46h
+rook-ceph-mon-b                          ClusterIP   10.103.69.118    <none>        6789/TCP,3300/TCP   46h
+rook-ceph-mon-c                          ClusterIP   10.97.179.87     <none>        6789/TCP,3300/TCP   46h
+rook-ceph-mon-d                          ClusterIP   10.98.44.174     <none>        6789/TCP,3300/TCP   45h
+
+
 wget https://raw.githubusercontent.com/rook/rook/master/cluster/examples/kubernetes/ceph/toolbox.yaml
 kubectl apply -f toolbox.yaml
 [root@kube1 ~]# kubectl -n rook-ceph get pods -o wide | grep ceph-tools
@@ -459,6 +471,13 @@ root@wordpress-595685cc49-rtg4z:/var/www/html# mount|grep rbd
 /dev/rbd0 on /var/www/html type xfs (rw,relatime,attr2,inode64,sunit=8192,swidth=8192,noquota)
 
 
+#重要
+由于RBD映射在主机系统上。主机需要能够解析由kube-dns服务管理的ceph-mon.ceph.svc.cluster.local名称。
+要获取kube-dns服务的IP地址，请运行:
+kubectl -n kube-system get svc/kube-dns
+# https://docs.ceph.com/docs/master/start/kube-helm/
+
+
 rook参考：
 https://blog.csdn.net/networken/article/details/85772418
 https://github.com/rook/rook/wiki/Storage-Configuration-Design
@@ -474,6 +493,24 @@ https://rook.io/docs/rook/v1.0/ceph-quickstart.html
 所谓 Ingress，就是 Service 的“Service”。
 所谓 Ingress 对象，其实就是 Kubernetes 项目对“反向代理”的一种抽象。
 我如何能使用 Kubernetes 的 Ingress来创建一个统一的负载均衡器，从而实现当用户访问不同的域名时，能够访问到不同的 Deployment 呢？
+
+
+一个 Nginx Ingress Controller 为你提供的服务，其实是一个可以根据 Ingress 对象和被代理后端Service 的变化，来自动进行更新的 Nginx 负载均衡器。 
+wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+kubectl apply -f mandatory.yaml
+
+
+当然，为了让用户能够用到这个 Nginx，我们就需要创建一个 Service来把 Nginx Ingress Controller管理的 Nginx 服务暴露出去： 
+wget  https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
+kubectl apply -f service-nodeport.yaml
+
+
+https://github.com/resouer/kubernetes-ingress/tree/master/examples/complete-example
+
+
+# kube Service、DNS与服务发现
+Service 是由 kube-proxy 组件，加上 iptables 来共同实现的。 
+-A KUBE-SERVICES -d 10.0.1.175/32 -p tcp -m comment --comment "default/hostnames: cluster IP" -m tcp --dport 80 -j KUBE-SVC-NWV5X2332I4OT4T3
 
 <pod-name>.<svc-name>.<namespace>.svc.cluster.local
 nginx-deployment.yaml
@@ -571,6 +608,25 @@ Request ID: e487e672673195c573147134167cf898
 curl -v -s -k --key certs/client.key --cert certs/client.crt https://127.0.0.1:8043
 
 
+### Ingress Controller 和它所需要的Service 部署完成后，如何使用？
+wget https://raw.githubusercontent.com/resouer/kubernetes-ingress/master/examples/complete-example/cafe-ingress.yaml
+wget https://raw.githubusercontent.com/resouer/kubernetes-ingress/master/examples/complete-example/cafe-secret.yaml
+wget https://raw.githubusercontent.com/resouer/kubernetes-ingress/master/examples/complete-example/cafe.yaml
+
+kubectl apply -f cafe-ingress.yaml
+kubectl apply -f cafe-secret.yaml
+kubectl apply -f cafe.yaml
+
+
+###### Service 与 DNS 的关系
+
+在 Kubernetes 中，Service 和Pod 都会被分配对应的DNS A 记录（从域名解析 IP 的记录）。
+
+对于 ClusterIP 模式的 Service 来说（比如我们上面的例子），它的 A 记录的格式是：..svc.cluster.local。当你访问这条 A 记录的时候，它解析到的就是该 Service 的 VIP 地址。
+
+而对于指定了 clusterIP=None 的Headless Service 来说，它的 A 记录的格式也是：..svc.cluster.local。但是，当你访问这条 A 记录的时候，它返回的是所有被代理的 Pod 的 IP 地址的集合。 
+
+此外，对于 ClusterIP 模式的 Service 来说，它代理的 Pod 被自动分配的A 记录的格式是：..pod.cluster.local。这条记录指向 Pod 的 IP 地址。 
 
 
 ################
