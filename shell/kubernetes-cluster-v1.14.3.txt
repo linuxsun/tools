@@ -56,6 +56,10 @@ for in in ${images[@]} ; do
 done
 
 
+链接：https://pan.baidu.com/s/1NrHRSSKhKdARLp8y-Baz5Q 
+提取码：uxv2 
+
+
 kubeadm init --pod-network-cidr=192.168.168.0/24 --kubernetes-version=v1.14.3 --apiserver-advertise-address=192.168.20.10
 ......
 [kubelet] Creating a ConfigMap "kubelet-config-1.14" in namespace kube-system with the configuration for the kubelets in the cluster
