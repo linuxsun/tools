@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 which jstack >/dev/null && : || exit 0
-Count=0 ; Break=5 ; waitTime=10
+Count=0 ; Break=5 ; waitTime=10 ; CpuUseAlarm=10
 maxSleepCount=1000 ; minFreeMem=1024
-projectName='tomcat' ; Site="${projectName}A"
+projectName='java' ; Site="${projectName}A"
 # projectName=("etermconfig" | "tomcat" | "server-rpc-project.jar" \
 # | "..." | "All JAVA projects")
 
@@ -61,6 +61,25 @@ Check () {
     freeMem=$(free -m|grep Mem|awk '{print $4}')
 }
 
+CheckCpu() {
+    #cpuUseCount=0
+    #uptime1m=$(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`)
+    #uptime1m=$(( $(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`) * 2 ))
+    uptime1m=$(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`)
+    cpuCoreNum=$(( $(cat /proc/cpuinfo |grep processor|wc -l) * 2 ))
+    #cpuCoreNum=$(cat /proc/cpuinfo |grep processor|wc -l)
+    cpuCore100=$(( `cat /proc/cpuinfo |grep processor|wc -l` * 100 ))
+    cpuUsSy=(`printf '%.f %.f' $(top -b -n1 |head -10|sed -n '3p' | awk '{print $1,$3}'|tr -d '%Cpu(s):' |grep  '[0-9]')`)
+    if [ $uptime1m -gt $cpuCoreNum ];then
+      cpuUseCount=$(( cpuUseCount += 1 ))
+    elif [ ${cpuUsSy[0]} -gt 90 ] || [ ${cpuUsSy[1]} -gt 90 ] ;then
+      cpuUseCount=$(( cpuUseCount += 1 ))
+    fi
+    echo "uptime1m:$uptime1m, cpuCoreNum:$cpuCoreNum, cpuCore100:$cpuCore100, cpuUsSy:${cpuUsSy[@]}"
+    echo "cpuUseCount:$cpuUseCount"
+    return $cpuUseCount
+}
+
 outputDict () {
 echo -e "{"
 echo -e "    \"Count\":$Count,"
@@ -87,7 +106,26 @@ Main () {
   done
 }
 
-Main
+MainCpu () {
+    cpuUseCount=0
+    while :
+    #while [ $Count -le $Break ]
+    do
+      CheckCpu
+      #echo "<>$cpuUseCount<>"
+      if [ $cpuUseCount -ge $CpuUseAlarm ]; then
+        Dump
+        #cpuUseCount=0
+        echo "cpuUseCount:$cpuUseCount"
+      fi
+      if [ $cpuUseCount -ge $(( CpuUseAlarm * 2 )) ];then
+        exit 1
+      fi
+      sleep $waitTime
+    done
+}
+MainCpu&
+Main&
 
 # chmod +x /etc/rc.d/rc.local
 # echo "su - admin -c 'nohup /home/admin/jstack.javaProject.sh \
