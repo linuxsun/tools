@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 which jstack >/dev/null && : || exit 0
-Count=0 ; Break=5 ; waitTime=10 ; CpuUseAlarm=10
+Count=0 ; Break=5 ; waitTime=40 ; CpuUseAlarm=10
 maxSleepCount=1000 ; minFreeMem=1024
 projectName='java' ; Site="${projectName}A"
 # projectName=("etermconfig" | "tomcat" | "server-rpc-project.jar" \
