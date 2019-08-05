@@ -595,6 +595,11 @@ iptables -t raw -A PREROUTING -p icmp -j TRACE
 NAME            TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
 ingress-nginx   NodePort   10.102.247.199   <none>        80:31396/TCP,443:31942/TCP   5h42m
 
+kubectl get svc --all-namespaces
+default                kubernetes                               ClusterIP      10.96.0.1        <none>        443/TCP                      9d
+kube-system            kube-dns                                 ClusterIP      10.96.0.10       <none>        53/UDP,53/TCP,9153/TCP       9d
+default                wordpress                                LoadBalancer   10.103.98.220    <pending>     80:30354/TCP                 8d
+
 
 kubectl get ingress
 kubectl describe ingress cafe-ingress
