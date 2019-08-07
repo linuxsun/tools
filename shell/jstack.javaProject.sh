@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 which jstack >/dev/null && : || exit 0
-Count=0 ; Break=5 ; waitTime=40 ; CpuUseAlarm=10
+Count=0 ; Break=5 ; waitTime=10 ; CpuUseAlarm=10
 maxSleepCount=1000 ; minFreeMem=1024
 projectName='java' ; Site="${projectName}A"
 # projectName=("etermconfig" | "tomcat" | "server-rpc-project.jar" \
@@ -61,23 +61,48 @@ Check () {
     freeMem=$(free -m|grep Mem|awk '{print $4}')
 }
 
+CheckSysVer() {
+  RELEASE=$(uname -a|awk '{print $3}') >/dev/null
+  echo $RELEASE |grep -E '(el6|el7)' >/dev/null && OS_TYPE='CentOS' || exit 1
+  echo $RELEASE |grep 'el6' >/dev/null && OS_VER=6
+  echo $RELEASE |grep 'el7' >/dev/null && OS_VER=7
+  return $OS_VER
+}
+
 CheckCpu() {
-    #cpuUseCount=0
-    #uptime1m=$(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`)
-    #uptime1m=$(( $(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`) * 2 ))
     uptime1m=$(printf '%.f' `uptime | awk '{print $10}'|tr -d ','`)
     cpuCoreNum=$(( $(cat /proc/cpuinfo |grep processor|wc -l) * 2 ))
-    #cpuCoreNum=$(cat /proc/cpuinfo |grep processor|wc -l)
     cpuCore100=$(( `cat /proc/cpuinfo |grep processor|wc -l` * 100 ))
-    cpuUsSy=(`printf '%.f %.f' $(top -b -n1 |head -10|sed -n '3p' | awk '{print $1,$3}'|tr -d '%Cpu(s):' |grep  '[0-9]')`)
+
+    CheckSysVer
+    VER=${OS_VER}
+    case ${VER} in
+      6)
+        cpuUsSy=(`printf '%.f %.f' $(top -b -n1 |head -10|sed -n '3p' |\
+          awk '{print $2,$3}'|tr -d '%us,' |tr -d '%sy,' )`)
+      ;;
+      7)
+        #uptime1m=$(printf '%.f' `uptime | awk '{print $11}'|tr -d ','`)
+        cpuUsSy=(`printf '%.f %.f' $(top -b -n1 |head -10|sed -n '3p' | \
+        awk -F ',' '{print $1,$2}'|grep -o ':.*[0-9].[0-9].*[0-9].[0-9]'| \
+        tr -d ':' |tr -d 'us' |tr -s ' ' ' ')`)
+      ;;
+      * )
+        echo "This OS is not supported..."
+        exit 1
+    ;;
+    esac
+
     if [ $uptime1m -gt $cpuCoreNum ];then
       cpuUseCount=$(( cpuUseCount += 1 ))
     elif [ ${cpuUsSy[0]} -gt 90 ] || [ ${cpuUsSy[1]} -gt 90 ] ;then
       cpuUseCount=$(( cpuUseCount += 1 ))
     fi
-    echo "uptime1m:$uptime1m, cpuCoreNum:$cpuCoreNum, cpuCore100:$cpuCore100, cpuUsSy:${cpuUsSy[@]}"
+    echo "uptime1m:$uptime1m, cpuCoreNum:$cpuCoreNum, cpuCore100:$cpuCore100,\
+cpuUsSy:${cpuUsSy[@]}"
     echo "cpuUseCount:$cpuUseCount"
     return $cpuUseCount
+
 }
 
 outputDict () {
