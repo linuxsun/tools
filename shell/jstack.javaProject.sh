@@ -49,6 +49,7 @@ Dump () {
 }
 
 Check () {
+    unset RunSleepCount sleepCount freeMem
     RunSleepCount=(`top -b -n1 |head -10|grep -E '(sleeping|running)'\
  | awk '{print $4,$6}'`)
     if [ ${#RunSleepCount[@]} -eq 2 ]; then
@@ -62,11 +63,19 @@ Check () {
 }
 
 CheckSysVer() {
+  unset ret RELEASE OS_VER
   RELEASE=$(uname -a|awk '{print $3}') >/dev/null
-  echo $RELEASE |grep -E '(el6|el7)' >/dev/null && OS_TYPE='CentOS' || exit 1
-  echo $RELEASE |grep 'el6' >/dev/null && OS_VER=6
-  echo $RELEASE |grep 'el7' >/dev/null && OS_VER=7
-  return $OS_VER
+  echo $RELEASE |grep -E '(el6|el7)' >/dev/null && OS_TYPE='CentOS'
+  ret=$?
+  #OS_TYPE=test
+  if [ "$OS_TYPE" == 'CentOS' ];then
+    echo $RELEASE |grep 'el6' >/dev/null && OS_VER=6
+    echo $RELEASE |grep 'el7' >/dev/null && OS_VER=7
+    return $OS_VER
+  else
+    OS_VER=Unkonwn
+    return $ret
+  fi
 }
 
 CheckCpu() {
@@ -75,11 +84,10 @@ CheckCpu() {
     cpuCore100=$(( `cat /proc/cpuinfo |grep processor|wc -l` * 100 ))
 
     CheckSysVer
-    VER=${OS_VER}
-    case ${VER} in
+    case ${OS_VER} in
       6)
         cpuUsSy=(`printf '%.f %.f' $(top -b -n1 |head -10|sed -n '3p' |\
-          awk '{print $2,$3}'|tr -d '%us,' |tr -d '%sy,' )`)
+        awk '{print $2,$3}'|tr -d '%us,' |tr -d '%sy,' )`)
       ;;
       7)
         #uptime1m=$(printf '%.f' `uptime | awk '{print $11}'|tr -d ','`)
@@ -90,7 +98,7 @@ CheckCpu() {
       * )
         echo "This OS is not supported..."
         exit 1
-    ;;
+      ;;
     esac
 
     if [ $uptime1m -gt $cpuCoreNum ];then
@@ -98,11 +106,9 @@ CheckCpu() {
     elif [ ${cpuUsSy[0]} -gt 90 ] || [ ${cpuUsSy[1]} -gt 90 ] ;then
       cpuUseCount=$(( cpuUseCount += 1 ))
     fi
-    echo "uptime1m:$uptime1m, cpuCoreNum:$cpuCoreNum, cpuCore100:$cpuCore100,\
-cpuUsSy:${cpuUsSy[@]}"
-    echo "cpuUseCount:$cpuUseCount"
+    echo "uptime1m:$uptime1m, cpuCoreNum:$cpuCoreNum, cpuCore100:$cpuCore100, \
+cpuUsSy:${cpuUsSy[@]}, cpuUseCount:$cpuUseCount"
     return $cpuUseCount
-
 }
 
 outputDict () {
@@ -149,10 +155,9 @@ MainCpu () {
       sleep $waitTime
     done
 }
+
 MainCpu&
 Main&
 
-# chmod +x /etc/rc.d/rc.local
-# echo "su - admin -c 'nohup /home/admin/jstack.javaProject.sh \
-# >/dev/null 2>&1 &'" >> /etc/rc.local
-
+# time echo "scale=5000; 4*a(1)" | bc -l -q
+#
