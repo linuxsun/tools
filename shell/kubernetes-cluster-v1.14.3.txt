@@ -126,6 +126,8 @@ kubectl describe pod -n kube-system weave-net-chhpd
 #kubeadm token generate
 #kubeadm token create <generated-token> --print-join-command --ttl=24h
 
+# 设置Master同时也是nodes节点，并能接收部署pods
+kubectl label node kube1 node-role.kubernetes.io/node=
 
 # 获取token值.
 默认情况下，令牌在24小时后过期
