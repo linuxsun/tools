@@ -717,6 +717,34 @@ charts  Chart.yaml  hello-svc-0.1.0.tgz  templates  values.yaml
 6. https://www.jianshu.com/p/d0cdbb49569b 
 7. https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
 
+##### 设置存储类#######
+## 空输出意味着没有存储类。
+kubectl describe sc
+
+建议为Digital Ocean 安装CSI-driver。这将do-block-storage使用Kubernetes CSI接口创建一个类。
+
+另一种选择是使用本地存储。使用本地存储类：
+$ cat <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+EOF | kubectl apply -f -
+
+然后，对于这两种情况，如果未storageClassName在PVC中指定，则可能需要将其设置为默认存储类：
+$ kubectl patch storageclass local-storage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+要么:
+$ kubectl patch storageclass do-block-storage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+
+参考：
+https://stackoverflow.com/questions/52975887/digitalocean-pod-has-unbound-immediate-persistentvolumeclaims
+
+
+
 
 ################
 参考资料
