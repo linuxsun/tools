@@ -711,11 +711,17 @@ helm delete dangling-ragdol
 [root@kube1 hello-svc]# ls
 charts  Chart.yaml  hello-svc-0.1.0.tgz  templates  values.yaml
 
+## 删除或重新安装
+kubectl delete deployment tiller-deploy --namespace kube-system
+helm reset
+
+
+
 ## 参考
 1. https://github.com/helm/charts
 2. https://github.com/cloudnativeapp/charts
 3. https://www.kubernetes.org.cn/3435.html
-4. https://hub.helm.sh/
+4. https://helm.sh/docs/using_helm/#installing-helm
 5. https://devopscube.com/install-configure-helm-kubernetes/
 6. https://www.jianshu.com/p/d0cdbb49569b 
 7. https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
@@ -745,6 +751,20 @@ $ kubectl patch storageclass do-block-storage -p '{"metadata": {"annotations":{"
 
 参考：
 https://stackoverflow.com/questions/52975887/digitalocean-pod-has-unbound-immediate-persistentvolumeclaims
+
+
+####### 基于heml部署redis集群 ######
+
+## redis 集群安装,参考
+https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
+不要忘记修改redis.yml
+storageClassName: rook-ceph-block
+usePassword: true
+password: password
+
+参考：
+https://github.com/rancher/rancher/issues/13442
+https://helm.sh/docs/using_helm/#installing-helm
 
 
 
