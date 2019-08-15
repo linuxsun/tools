@@ -640,6 +640,84 @@ kubectl apply -f cafe.yaml
 此外，对于 ClusterIP 模式的 Service 来说，它代理的 Pod 被自动分配的A 记录的格式是：..pod.cluster.local。这条记录指向 Pod 的 IP 地址。 
 
 
+####### helm #########
+
+## 安装客户端 helm
+wget -qO- --no-check-certificate https://get.helm.sh/helm-v2.12.3-linux-amd64.tar.gz | tar xz -C /usr/local/bin
+sed -i 's|PATH=$PATH:$HOME/bin|PATH=$PATH:$HOME/bin:/usr/local/bin/linux-amd64|' ~/.bash_profile
+source ~/.bash_profile
+
+## 安装服务端 tiller
+前提是已经部署了kubernetes集群
+docker pull fishead/gcr.io.kubernetes-helm.tiller:v2.12.3 
+docker tag fishead/gcr.io.kubernetes-helm.tiller:v2.12.3 gcr.io/kubernetes-helm/tiller:v2.12.3
+helm init --service-account=tiller --tiller-image=gcr.io/kubernetes-helm/tiller:v2.12.3  --history-max 300
+
+tee -a helm-rbac.yaml <<-'EOF'
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+EOF
+
+# kubectl apply -f helm-rbac.yam
+# kubectl get deployment tiller-deploy -n kube-system	
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+tiller-deploy   1/1     1            1           44m
+
+# kubectl get pods -n kube-system|grep tiller
+tiller-deploy-8cdc9f559-j7s8t   1/1     Running   0          10m
+
+helm install stable/nginx-ingress --name nginx-ingress
+helm ls
+helm repo update #更新chart repo
+
+##创建一个chart
+helm create hello-svc
+cd hello-svc
+helm install --dry-run --debug ./
+helm install ./
+helm list
+NAME                    REVISION        UPDATED                         STATUS          CHART           APP VERSION     NAMESPACE
+dangling-ragdoll        1               Wed Aug 14 17:11:50 2019        DEPLOYED        hello-svc-0.1.0 1.0             default 
+
+## Helm Hub “中国站”
+helm repo add apphub https://apphub.aliyuncs.com
+helm search apphub
+
+
+##删除release
+helm delete dangling-ragdol
+
+##chart打包分发
+[root@kube1 hello-svc]# helm package ./
+[root@kube1 hello-svc]# ls
+charts  Chart.yaml  hello-svc-0.1.0.tgz  templates  values.yaml
+
+## 参考
+1. https://github.com/helm/charts
+2. https://github.com/cloudnativeapp/charts
+3. https://www.kubernetes.org.cn/3435.html
+4. https://hub.helm.sh/
+5. https://devopscube.com/install-configure-helm-kubernetes/
+6. https://www.jianshu.com/p/d0cdbb49569b 
+
+
+
 ################
 参考资料
 1. 包v1beta2定义了kubeadm配置文件格式的v1beta2版本。
