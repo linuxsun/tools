@@ -653,6 +653,9 @@ docker pull fishead/gcr.io.kubernetes-helm.tiller:v2.12.3
 docker tag fishead/gcr.io.kubernetes-helm.tiller:v2.12.3 gcr.io/kubernetes-helm/tiller:v2.12.3
 helm init --service-account=tiller --tiller-image=gcr.io/kubernetes-helm/tiller:v2.12.3  --history-max 300
 
+# or
+helm init --client-only --stable-repo-url https://apphub.aliyuncs.com
+
 tee -a helm-rbac.yaml <<-'EOF'
 apiVersion: v1
 kind: ServiceAccount
