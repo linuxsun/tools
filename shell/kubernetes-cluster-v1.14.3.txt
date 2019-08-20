@@ -702,6 +702,10 @@ dangling-ragdoll        1               Wed Aug 14 17:11:50 2019        DEPLOYED
 helm repo add apphub https://apphub.aliyuncs.com
 helm search apphub
 
+## 启动服务端
+HELM_HOST=localhost:44134
+/usr/local/bin/linux-amd64/tiller >/dev/null 2>&1 &
+ 
 
 ##删除release
 helm delete dangling-ragdol
