@@ -832,6 +832,9 @@ spec.revisionHistoryLimit
 还有successfulJobsHistoryLimit和failedJobsHistoryLimit
 
 
+
+
+
 ################
 参考资料
 1. 包v1beta2定义了kubeadm配置文件格式的v1beta2版本。
