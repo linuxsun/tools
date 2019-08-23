@@ -771,6 +771,67 @@ https://github.com/rancher/rancher/issues/13442
 https://helm.sh/docs/using_helm/#installing-helm
 
 
+###### kubernetes cluster 常用指令 ######
+
+查看 ENDPOINTS IP地址
+kubectl get ep
+
+查看pvc及删除pvc
+kubectl get pvc
+kubectl delete pvc <rabbitmq-name>
+
+#Rabbitmq 添加 vhosts
+kubectl port-forward --namespace default svc/rabbitmq 15672:15672
+curl -u user:ZE5ujZaUs4 -X PUT http://127.0.0.1:15672/api/vhosts/Rabbitmq
+#参考https://www.rabbitmq.com/vhosts.html
+
+水平扩展 / 收缩
+kubectl scale deployment nginx-deployment --replicas=4
+
+
+滚动更新
+kubectl create -f nginx-deployment.yaml --record
+
+pod四个状态字段: DESIRED CURRENT UP-TO-DATE AVAILABLE
+kubectl get deployments
+重点关注AVAILABLE,即：既是 Running 状态，又是最新版本， 并且已经处于 Ready （健康检查正确）状态的 Pod 的个数。
+
+实时查看 Deployment 对象的状态变化。
+kubectl rollout status deployment/nginx-deployment 
+
+查看这个 Deployment 所控制的 ReplicaSet：
+kubectl get rs
+
+修改 Deployment 有很多方法
+kubectl edit deployment/nginx-deployment
+kubectl rollout status deployment/nginx-deployment
+kubectl describe deployment nginx-deployment
+
+直接修改 nginx-deployment所使用的镜像:
+kubectl set image deployment/nginx-deployment nginx=nginx:1.91
+
+把整个 Deployment 回滚到上一个版本
+kubectl rollout undo deployment/nginx-deployment
+
+查看每次 Deployment 变更对应的版本
+kubectl rollout history deployment/nginx-deployment 
+
+要回滚到的指定版本的版本号
+kubectl rollout history deployment/nginx-deployment --revision=2
+
+对 Deployment 进行的每一次更新操作，都会生成一个新的 ReplicaSet 对象，会造成浪费资源。
+有个方法，对 Deployment 的多次更新操作，最后只生成一个 ReplicaSet：
+kubectl rollout pause deployment/nginx-deployment # 让这个 Deployment 进入了一个“暂停”状态。
+...
+期间的操作不会触发更新,最后只会触发一次“滚动更新”。 
+...
+kubectl rollout resume deploy/nginx-deployment #把这个 Deployment“恢复”回来
+
+如何控制这些“历史”ReplicaSet 的数量呢？
+spec.revisionHistoryLimit
+如果设置为 0，你就再也不能做回滚操作。
+还有successfulJobsHistoryLimit和failedJobsHistoryLimit
+
 
 
 ################
