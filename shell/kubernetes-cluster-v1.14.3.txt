@@ -788,7 +788,6 @@ curl -u user:ZE5ujZaUs4 -X PUT http://127.0.0.1:15672/api/vhosts/Rabbitmq
 水平扩展 / 收缩
 kubectl scale deployment nginx-deployment --replicas=4
 
-
 滚动更新
 kubectl create -f nginx-deployment.yaml --record
 
@@ -831,7 +830,6 @@ kubectl rollout resume deploy/nginx-deployment #把这个 Deployment“恢复”
 spec.revisionHistoryLimit
 如果设置为 0，你就再也不能做回滚操作。
 还有successfulJobsHistoryLimit和failedJobsHistoryLimit
-
 
 
 ################
