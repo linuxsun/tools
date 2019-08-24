@@ -629,6 +629,17 @@ kubectl apply -f cafe-secret.yaml
 kubectl apply -f cafe.yaml
 
 
+###### ingress-nginx 另外一种部署方法 ######
+wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+sed -i 's|quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.25.1|registry.cn-hangzhou.aliyuncs.com/kubeapps/quay-nginx-ingress-controller:0.24.1|g' mandatory.yaml  
+POD_NAMESPACE=ingress-nginx
+POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -it $POD_NAME -n $POD_NAMESPACE -- /nginx-ingress-controller --version
+
+#官网
+https://kubernetes.github.io/ingress-nginx/deploy/
+
+
 ###### Service 与 DNS 的关系
 
 在 Kubernetes 中，Service 和Pod 都会被分配对应的DNS A 记录（从域名解析 IP 的记录）。
