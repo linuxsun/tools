@@ -773,13 +773,54 @@ https://stackoverflow.com/questions/52975887/digitalocean-pod-has-unbound-immedi
 
 ####### 基于helm部署redis集群 ######
 
-## redis 集群安装,参考
+helm install --name redis-master1-slave3 stable/redis --values values-production.yaml
+kubectl run --namespace default redis-master1-slave3-client --rm --tty -i --restart='Never' \
+    --env REDIS_PASSWORD=$REDIS_PASSWORD \--labels="redis-master1-slave3-client=true" \
+   --image docker.io/bitnami/redis:5.0.5-debian-9-r104 -- bash
+
+## redis 集群安装参考
+https://github.com/helm/charts/tree/master/stable/redis
 https://engineering.bitnami.com/articles/deploy-and-scale-a-redis-cluster-on-kubernetes-with-bitnami-and-helm.html
 
-不要忘记修改redis.yml
-storageClassName: rook-ceph-block
-usePassword: true
-password: password
+注意：
+1) 如果自定义存储类，要先创建  kubectl apply -f pvc-ceph.yml 
+cat pvc-ceph.yml 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-ceph-data
+  namespace: default
+  labels:
+    app: redis
+    release: redis
+    role: master
+    storage: ceph
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+
+2)values-production.yaml 部份值要做调整
+persistence:
+  existingClaim: redis-ceph-data
+master:
+  persistence:
+    enabled: true
+  storageClassName: rook-ceph-block
+slave:
+  persistence:
+  enabled: false #从节点只读，不需要持久化
+
+3) NetworkPolicy
+要为Redis启用网络策略，请安装 实现Kubernetes NetworkPolicy规范的网络插件，并设置networkPolicy.enabled为true。
+对于Kubernetes v1.5和v1.6，您还必须通过设置DefaultDeny名称空间注释来打开NetworkPolicy。注意：这将对命名空间中的所有 pod 强制执行策略：
+kubectl annotate namespace default "net.beta.kubernetes.io/network-policy={\"ingress\":{\"isolation\":\"DefaultDeny\"}}"
+启用NetworkPolicy后，只有具有生成的客户端标签的pod才能连接到Redis。成功安装后，此标签将显示在输出中。
+
+
 
 参考：
 https://github.com/rancher/rancher/issues/13442
