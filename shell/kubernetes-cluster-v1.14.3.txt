@@ -771,10 +771,11 @@ $ kubectl patch storageclass do-block-storage -p '{"metadata": {"annotations":{"
 https://stackoverflow.com/questions/52975887/digitalocean-pod-has-unbound-immediate-persistentvolumeclaims
 
 
-####### 基于heml部署redis集群 ######
+####### 基于helm部署redis集群 ######
 
 ## redis 集群安装,参考
-https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
+https://engineering.bitnami.com/articles/deploy-and-scale-a-redis-cluster-on-kubernetes-with-bitnami-and-helm.html
+
 不要忘记修改redis.yml
 storageClassName: rook-ceph-block
 usePassword: true
@@ -783,6 +784,7 @@ password: password
 参考：
 https://github.com/rancher/rancher/issues/13442
 https://helm.sh/docs/using_helm/#installing-helm
+https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
 
 
 ###### kubernetes cluster 常用指令 ######
