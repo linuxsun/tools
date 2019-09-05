@@ -663,8 +663,13 @@ source ~/.bash_profile
 
 ## 安装服务端 tiller
 前提是已经部署了kubernetes集群
+
+Kubernetes会随机将tiller-deploy-xxx-XYZ-xxx分配到任意一台宿主主机运行，
+可以在控制台上查看，然后以下指令就在相应的宿主主机上执行：
 docker pull fishead/gcr.io.kubernetes-helm.tiller:v2.12.3 
 docker tag fishead/gcr.io.kubernetes-helm.tiller:v2.12.3 gcr.io/kubernetes-helm/tiller:v2.12.3
+
+以下指令在Kubernetes Master执行:
 helm init --service-account=tiller --tiller-image=gcr.io/kubernetes-helm/tiller:v2.12.3  --history-max 300
 
 # or
@@ -733,7 +738,7 @@ charts  Chart.yaml  hello-svc-0.1.0.tgz  templates  values.yaml
 $ kubectl get all --all-namespaces | grep tiller
 $ kubectl delete deployment tiller-deploy -n kube-system
 $ kubectl delete service tiller-deploy -n kube-system
-$ kubectl get all --all-namespaces | grep tiller`
+$ kubectl get all --all-namespaces | grep tiller
 $ helm reset
 
 
@@ -746,6 +751,7 @@ $ helm reset
 5. https://devopscube.com/install-configure-helm-kubernetes/
 6. https://www.jianshu.com/p/d0cdbb49569b 
 7. https://github.com/jay-johnson/deploy-to-kubernetes/tree/master/redis
+8. https://stackoverflow.com/questions/51646957/helm-could-not-find-tiller
 
 ##### 设置存储类#######
 ## 空输出意味着没有存储类。
