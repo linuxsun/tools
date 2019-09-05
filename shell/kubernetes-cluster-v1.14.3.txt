@@ -730,8 +730,11 @@ helm delete dangling-ragdol
 charts  Chart.yaml  hello-svc-0.1.0.tgz  templates  values.yaml
 
 ## 删除或重新安装
-kubectl delete deployment tiller-deploy --namespace kube-system
-helm reset
+$ kubectl get all --all-namespaces | grep tiller
+$ kubectl delete deployment tiller-deploy -n kube-system
+$ kubectl delete service tiller-deploy -n kube-system
+$ kubectl get all --all-namespaces | grep tiller`
+$ helm reset
 
 
 
