@@ -934,6 +934,16 @@ spec.revisionHistoryLimit
 还有successfulJobsHistoryLimit和failedJobsHistoryLimit
 
 
+# 给master1节点添加node标签
+kubectl label node master1 node-role.kubernetes.io/node=
+
+# 给master1节点打"污点"。不允许pod在master1节点运行
+kubectl taint nodes master1 node-role.kubernetes.io/master-
+kubectl taint nodes master1 node-role.kubernetes.io/master=:NoSchedule
+
+# 给master1节点打"污点"。允许pod在master1节点运行
+kubectl taint nodes master1 node-role.kubernetes.io/master=:PreferNoSchedule
+
 
 
 
