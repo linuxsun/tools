@@ -766,7 +766,7 @@ subjects:
     namespace: kube-system
 EOF
 
-# kubectl apply -f helm-rbac.yam
+# kubectl apply -f helm-rbac.yaml
 # kubectl get deployment tiller-deploy -n kube-system	
 NAME            READY   UP-TO-DATE   AVAILABLE   AGE
 tiller-deploy   1/1     1            1           44m
