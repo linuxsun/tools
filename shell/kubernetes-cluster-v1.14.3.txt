@@ -979,6 +979,31 @@ kubectl taint nodes master1 node-role.kubernetes.io/master=:NoSchedule
 kubectl taint nodes master1 node-role.kubernetes.io/master=:PreferNoSchedule
 
 
+###################
+删除集群
+kubectl drain master1 --delete-local-data --force --ignore-daemonsets
+kubectl drain worker1 --delete-local-data --force --ignore-daemonsets
+kubectl drain worker2 --delete-local-data --force --ignore-daemonsets
+kubectl delete node master1
+kubectl delete node worker1
+kubectl delete node worker2
+kubeadm reset
+iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
+ipvsadm -C
+
+systemctl stop {docker,kubelet}
+
+yum autoremove kubelet-1.14.3 kubectl-1.14.3 kubeadm-1.14.3
+#yum purge kubelet-1.14.3 kubectl-1.14.3 kubeadm-1.14.3
+ls /etc/cni/net.d/
+
+rm -rf /var/lib/rook/*
+rm -rf /var/lib/docker/*
+rm -rf /var/lib/kubelet/*
+rm -rf /var/lib/etcd/*
+rm -rf ~/.kube/*
+
+
 
 
 ################
