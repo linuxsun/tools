@@ -59,6 +59,11 @@ done
 链接：https://pan.baidu.com/s/1NrHRSSKhKdARLp8y-Baz5Q 
 提取码：uxv2 
 
+# --cgroup-driver=systemd
+touch /etc/sysconfig/kubelet
+echo 'KUBELET_EXTRA_ARGS="--cgroup-driver=systemd"' > /etc/sysconfig/kubelet
+systemctl restart {docker,kubelet}
+systemctl status {docker,kubelet} -l
 
 kubeadm init --pod-network-cidr=10.0.0.0/8 --kubernetes-version=v1.14.3 --apiserver-advertise-address=192.168.20.10
 ......
@@ -93,7 +98,9 @@ kubeadm join 192.168.204.10:6443 --token obq630.1galcwg8y4b2alq6 \
 export KUBECONFIG=/etc/kubernetes/admin.conf
 echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
 
-# weave网络插件配置文件
+
+# weave网络插件配置文件.
+# 此步骤在kubeadm init之前操作更好
 test -f /etc/cni/net.d/10-weave.conflist || \
 cat > /etc/cni/net.d/10-weave.conflist <<-'EOF'
 {
@@ -115,11 +122,13 @@ cat > /etc/cni/net.d/10-weave.conflist <<-'EOF'
 EOF
 
 # 安装weave网络插件
+# 此步骤在kubeadm init之前操作更好
 curl -fsSLo weave-daemonset.yaml "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 kubectl apply -f weave-daemonset.yaml
 
 # weave网络插件未安装好之前，状态会一直处于NotReady
 kubectl get nodes
+kubectl get nodes --show-labels
 NAME      STATUS     ROLES     AGE       VERSION
 master    NotReady   master    1d        v1.14.3
 
@@ -150,6 +159,9 @@ kubectl describe pod -n kube-system weave-net-chhpd
 
 # 设置Master同时也是nodes节点，并能接收部署pods
 kubectl label node kube1 node-role.kubernetes.io/node=
+
+# 为节点添加"NodeType=storage"标签
+kubectl label nodes kube2 NodeType=storage
 
 # 获取token值.
 默认情况下，令牌在24小时后过期
