@@ -554,11 +554,17 @@ kubectl -n kube-system get svc/kube-dns
 # https://docs.ceph.com/docs/master/start/kube-helm/
 
 
+# 将存储类rook-ceph-block设置为默认值
+kubectl get storageclass
+kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+
 rook参考：
 https://blog.csdn.net/networken/article/details/85772418
 https://github.com/rook/rook/wiki/Storage-Configuration-Design
 https://docs.ceph.com/docs/master/start/
 https://rook.io/docs/rook/v1.0/ceph-quickstart.html
+https://docs.aws.amazon.com/eks/latest/userguide/storage-classes.html
 
 
 #kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
