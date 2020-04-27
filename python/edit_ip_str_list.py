@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 import os, re, sys, platform, time
 
+#Self = os.path.join(os.path.dirname(os.getcwd()), sys.argv[0])
+Self = os.path.join(os.getcwd(), sys.argv[0])
+print(Self)
 OsType = platform.platform()
 #sdir = r"C:\tmp"
-sdir = r"/application/nginx/conf/extra"
+sdir = r"/root/github.com/tools/python"
 slist = []
 
 item = {
@@ -27,6 +30,11 @@ def AddFileToSlist():
             for name in files:
                 # print(os.path.join(root, name))
                 slist.append(os.path.join(root, name))
+        try:
+            slist.remove(Self)
+        except:
+            pass
+        print(slist)
     except OSError as ex:
         print(ex)
 
