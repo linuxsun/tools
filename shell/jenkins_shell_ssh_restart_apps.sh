@@ -19,3 +19,5 @@ for pid in ${myPID} ; do
 done
 ssh -p $port $dUser@$dHost "nohup java -jar $destDir/$appName >/dev/null 2>&1 &"
 
+# 一行命令kill java rpc 进程
+unset mypid upid; mypid=(`ps -ef |grep java|grep rpc|awk '{print $2}'`) ; for upid in ${mypid[@]}; do   if [ "$upid" ]; then     kill -HUP $upid && sleep 3 && kill -9 $upid && unset upid; else continue; fi; done 
