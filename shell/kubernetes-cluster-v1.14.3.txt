@@ -569,11 +569,11 @@ kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"sto
 tee get_rook_ceph_passwd.sh <<-'EOF'
 #!/usr/bin/env bash
 #获取rook-ceph密码
-MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
+#MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
 #passwd=$(kubectl -n rook-ceph logs $MGR_POD | grep password | head -1)
-passwd=$(kubectl -n rook-ceph logs $MGR_POD | grep password|head -1|awk -F'password' '{print $NF}'|awk '{print $1}')
+#passwd=$(kubectl -n rook-ceph logs $MGR_POD | grep password|head -1|awk -F'password' '{print $NF}'|awk '{print $1}')
 uname='admin'
-passwd="$passwd"
+passwd='default_passwd'
 
 kubectl get service -n rook-ceph | grep dashboard
 MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
