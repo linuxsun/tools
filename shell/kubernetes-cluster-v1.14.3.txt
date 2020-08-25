@@ -582,6 +582,7 @@ echo "username:$uname
 password:$passwd"
 kubectl -n rook-ceph get service
 EOF
+chmod 750 get_rook_ceph_passwd.sh && ./get_rook_ceph_passwd.sh
 
 
 rook参考：
@@ -842,6 +843,11 @@ $ kubectl delete service tiller-deploy -n kube-system
 $ kubectl get all --all-namespaces | grep tiller
 $ helm reset
 
+# 
+cat > get_kubeapp.sh <<-'EOF'
+kubectl get secret $(kubectl get serviceaccount kubeapps-operator -o jsonpath='{.secrets[].name}') -o jsonpath='{.data.token}' | base64 --decode
+EOF
+chmod 750 get_kubeapp.sh && ./get_kubeapp.sh
 
 
 ## 参考
