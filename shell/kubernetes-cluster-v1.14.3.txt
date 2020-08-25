@@ -566,6 +566,24 @@ kubectl get storageclass
 kubectl patch storageclass rook-ceph-block -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 
+tee get_rook_ceph_passwd.sh <<-'EOF'
+#!/usr/bin/env bash
+#获取rook-ceph密码
+MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
+#passwd=$(kubectl -n rook-ceph logs $MGR_POD | grep password | head -1)
+passwd=$(kubectl -n rook-ceph logs $MGR_POD | grep password|head -1|awk -F'password' '{print $NF}'|awk '{print $1}')
+uname='admin'
+passwd="$passwd"
+
+kubectl get service -n rook-ceph | grep dashboard
+MGR_POD=`kubectl get pod -n rook-ceph | grep mgr | awk '{print $1}'`
+kubectl -n rook-ceph logs $MGR_POD | grep password | tail -n 1
+echo "username:$uname
+password:$passwd"
+kubectl -n rook-ceph get service
+EOF
+
+
 rook参考：
 https://blog.csdn.net/networken/article/details/85772418
 https://github.com/rook/rook/wiki/Storage-Configuration-Design
