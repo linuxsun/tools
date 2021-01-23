@@ -1040,6 +1040,150 @@ rm -rf /var/lib/kubelet/*
 rm -rf /var/lib/etcd/*
 rm -rf ~/.kube/*
 
+##################################################################################
+
+## K8S日常运维
+
+### node
+systemctl restart docker
+systemctl restart flanneld
+systemctl restart nginx-proxy
+systemctl restart kube-proxy
+systemctl restart kubelet
+
+systemctl enable flanneld
+systemctl enable kubelet
+systemctl enable kube-proxy
+systemctl enable nginx-proxy
+systemctl enable docker
+
+systemctl disable flanneld
+systemctl disable kubelet
+systemctl disable kube-proxy
+systemctl disable nginx-proxy
+systemctl disable docker
+
+
+systemctl stop flanneld
+systemctl stop kubelet
+systemctl stop kube-proxy
+systemctl stop nginx-proxy
+systemctl stop docker
+
+systemctl status flanneld -l 
+systemctl status docker -l
+systemctl status nginx-proxy -l
+systemctl status kube-proxy -l
+systemctl status kubelet -l
+
+### 检查有哪些k8s服务
+systemctl |grep pro
+systemctl restart {nginx-proxy.service,kube-proxy.service,gssproxy.service,kubelet.service,kube-proxy.service}
+systemctl |grep kube
+systemctl restart {sys-devices-virtual-net-kube,sys-subsystem-net-devices-kube}
+
+
+### master
+systemctl enable kube-apiserver
+systemctl enable kube-controller-manager
+systemctl enable kube-scheduler
+
+systemctl disable kube-apiserver
+systemctl disable kube-controller-manager
+systemctl disable kube-scheduler
+
+systemctl restart kube-apiserver
+systemctl restart kube-controller-manager
+systemctl restart kube-scheduler
+
+systemctl stop kube-apiserver
+systemctl stop kube-controller-manager
+systemctl stop kube-scheduler
+
+systemctl status kube-apiserver -l
+systemctl status kube-controller-manager -l
+systemctl status kube-scheduler -l
+
+
+
+
+### 清理Terminating状态的POD
+kubectl get pods --all-namespaces |grep minik |grep Terminating > k8s-node-gdgz-35-minik-desktop-pod.log
+kubectl get pods --all-namespaces |grep desktop |grep Terminating >> k8s-node-gdgz-35-minik-desktop-pod.log
+
+kubectl delete -n app pod $p --force --grace-period=0
+for i in `cat k8s-node-gdgz-35-minik-desktop-pod.log |awk '{print $2}'`; do kubectl delete -n app pod $i --force --grace-period=0; done
+
+kubectl get pods --all-namespaces |grep aampay |grep Terminating > k8s-node-gdgz-35-aampay-pod.log
+for i in `cat k8s-node-gdgz-35-aampay-pod.log |awk '{print $2}'`; do kubectl delete -n app pod $i --force --grace-period=0; done
+
+kubectl get pods --all-namespaces |grep desktop |grep Terminating > k8s-node-gdgz-35-desktop-pod.log
+for i in `cat k8s-node-gdgz-35-desktop-pod.log |awk '{print $2}'`; do kubectl delete -n app pod $i --force --grace-period=0; done
+
+kubectl get pods -n kube-system|grep prometheus |grep Terminating > k8s-node-gdgz-28-prometheus-grafana-pod.log
+kubectl get pods -n kube-system|grep grafana-core |grep Terminating >> k8s-node-gdgz-28-prometheus-grafana-pod.log
+for i in `cat k8s-node-gdgz-28-prometheus-grafana-pod.log |awk '{print $1}'`; do kubectl delete -n kube-system pod $i --force --grace-period=0; done
+
+kubectl describe -n kube-system pod grafana-core-669c7c9d96-hjmtl 
+kubectl describe -n kube-system pod prometheus-5bff6b7f9f-7k8s4
+
+### 给节点打SchedulingDisabled标签
+kubectl cordon k8s-master-25
+kubectl uncordon k8s-node-41 
+
+### 故障排查
+journalctl -u kubelet -f 
+kubectl get cs # 检查Kubernetes集群是否恢复正常
+
+### 清理操作系统读/写 buff/cache
+sync && /sbin/sysctl -w vm.drop_caches=1
+
+
+##################################################################################
+
+### 生产环境 etcd查看集群节点
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member list
+a38d47abf867187: name=etcd3 peerURLs=https://172.16.70.26:2380 clientURLs=https://172.16.70.26:2379 isLeader=true
+556044fbb065c46a: name=etcd2 peerURLs=https://172.16.70.25:2380 clientURLs=https://172.16.70.25:2379 isLeader=false
+57d74c6a43f97414: name=etcd2 peerURLs=https://172.16.70.24:2380 clientURLs=https://172.16.70.25:2379 isLeader=false
+
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member remove 556044fbb065c46a
+a38d47abf867187: name=etcd3 peerURLs=https://172.16.70.26:2380 clientURLs=https://172.16.70.26:2379 isLeader=true
+57d74c6a43f97414: name=etcd2 peerURLs=https://172.16.70.24:2380 clientURLs=https://172.16.70.25:2379 isLeader=false
+
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member remove 57d74c6a43f97414
+
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member add etcd2 https://172.16.70.25:2380 
+Added member named etcd2 with ID 863866ac33006b16 to cluster
+ETCD_NAME="etcd2"
+ETCD_INITIAL_CLUSTER="etcd3=https://172.16.70.26:2380,etcd2=https://172.16.70.25:2380"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member add etcd1 https://172.16.70.24:2380 
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" cluster-health 
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://172.16.70.24:2379,https://172.16.70.25:2379,https://172.16.70.26:2379" member remove 
+
+
+### 测试环境 etcd查看集群节点
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://10.0.1.24:2379,https://10.0.1.25:2379,https://10.0.1.26:2379" member list --write-out=table 
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://10.0.1.24:2379,https://10.0.1.25:2379,https://10.0.1.26:2379" cluster-health
+
+### 获取某个KEY
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints="https://10.0.1.24:2379,https://10.0.1.25:2379,https://10.0.1.26:2379" get /registry/apiregistration.k8s.io/apiservices/v1.apps
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints=https://10.0.1.24:2379,https://10.0.1.25:2379,https://10.0.1.26:2379 get / --prefix --keys-only 
+etcdctl  --ca-file=/etc/kubernetes/ssl/ca.pem --cert-file=/etc/kubernetes/ssl/etcd.pem --key-file=/etc/kubernetes/ssl/etcd-key.pem  --endpoints=https://10.0.1.24:2379,https://10.0.1.25:2379,https://10.0.1.26:2379 ls /
+
+etcdctl  --endpoints=http://10.0.1.234:2379,http://10.0.1.235:2379,http://10.0.1.236:2379 ls /
+etcdctl  --endpoints=http://10.0.1.234:2379,http://10.0.1.235:2379,http://10.0.1.236:2379 member list
+etcdctl  --endpoints=http://10.0.1.234:2379,http://10.0.1.235:2379,http://10.0.1.236:2379 cluster-health 
+
+# etcdctl member remove 节点id
+etcdctl --endpoints=http://10.0.1.234:2379,http://10.0.1.235:2379,http://10.0.1.236:2379 member remove edc52e7472f9c9bf
+
+### 重新添加 节点
+etcdctl --endpoints=http://10.0.1.234:2379,http://10.0.1.235:2379,http://10.0.1.236:2379 member add etcd-node2 http://10.0.1.235:2380
+etcdctl member list 
+
 
 
 
@@ -1053,5 +1197,13 @@ https://www.cnblogs.com/RainingNight/p/deploying-k8s-dashboard-ui.html
 
 3. 通过插件集成Kubernetes
 https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+4. 
+https://www.cnblogs.com/evenchen/p/12171546.html
+
+
+
+
+
 
 
